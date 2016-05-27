@@ -27,15 +27,17 @@ import scipy
 import datetime
 
 class Format(object):
-    """ Abstract class for the several data sources
+    """ Library that allows to format dataframes to be later enriched
 
-    This class aims at being the central point where all of the JSON
-    files coming from Perceval are unified. This data format and
-    cleaning process is done due to inconsistencies and missing
-    fields that may appear when reading Perceval info.
+    This class is the first step in the enrichment process of data.
+    Although this can be used alone for other purposes, its main
+    goal consists of providing well formated [missing fields,
+    string dates, removal of not needed fields] for the following
+    steps of the enrichment process.
 
-    Thus, the goal of this class and its subclasses is to provide
-    a trustable final JSON format for each of the data sources.
+    This data format and cleaning process is done due to
+    inconsistencies and missing fields that may appear when reading
+    information.
     """
 
     def fill_missing_fields(self, data, columns):
