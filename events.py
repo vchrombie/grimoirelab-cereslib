@@ -84,7 +84,6 @@ class Bugzilla(Events):
         events = pandas.DataFrame()
 
         for item in self.items:
-            print item.keys()
             bug_data = item["data"]
             if granularity == 1:
                 # Open Date: filling a new event
@@ -120,3 +119,112 @@ class Bugzilla(Events):
 
         return events
 
+
+class Git(Events):
+    """ Class used to 'eventize' Git items
+
+    This splits information of each item based on a pre-configured mapping.
+    There are several levels of events. These levels were created as a way
+    to have more or less time consuming generation of events.
+    """
+
+    EVENT_COMMIT = "COMMIT"
+    EVENT_FILE = "FILE_"
+
+    # Fields supported by this module (when a DataFrame is returned)
+    COMMIT_ID = "id"
+    COMMIT_EVENT = "eventtype"
+    COMMIT_DATE = "date"
+    COMMIT_OWNER = "owner"
+
+    FILE_EVENT = "fileaction"
+    FILE_PATH = "filepath"
+    FILE_ADDED_LINES = "addedlines"
+    FILE_REMOVED_LINES = "removedlines"
+
+    def __init__(self, items):
+        """ Main constructor of the class
+
+        :param items: original list of JSON that contains all info about a commit
+        :type items: list
+        """
+
+        self.items = items
+
+
+    def eventize(self, granularity):
+        """ This splits the JSON information found at self.events into the
+        several events. For this there are three different levels of time
+        consuming actions: 1-soft, 2-medium and 3-hard.
+
+        Level 1 provides events about commits
+        Level 2 provides events about files
+        Level 3 provides other events (not used so far)
+
+        :param granularity: Levels of time consuming actions to calculate events
+        :type granularity: integer
+
+        :returns: Pandas dataframe with splitted events.
+        :rtype: pandas.DataFrame
+        """
+
+
+        commit = {}
+        # First level granularity
+        commit[Git.COMMIT_ID] = []
+        commit[Git.COMMIT_EVENT] = []
+        commit[Git.COMMIT_DATE] = []
+        commit[Git.COMMIT_OWNER] = []
+
+        # Second level of granularity
+        commit[Git.FILE_EVENT] = []
+        commit[Git.FILE_PATH] = []
+        commit[Git.FILE_ADDED_LINES] = []
+        commit[Git.FILE_REMOVED_LINES] = []
+
+        events = pandas.DataFrame()
+
+        for item in self.items:
+            commit_data = item["data"]
+            if granularity == 1:
+                commit[Git.COMMIT_ID].append(commit_data['commit'])
+                commit[Git.COMMIT_EVENT].append(Git.EVENT_COMMIT)
+                commit[Git.COMMIT_DATE].append(parser.parse(commit_data['AuthorDate']))
+                commit[Git.COMMIT_OWNER].append(commit_data['Author'])
+
+            if granularity == 2:
+                # Add extra info about files actions, if there were any
+                if commit_data.has_key("files"):
+                    files = commit_data["files"]
+                    for f in files:
+                        commit[Git.COMMIT_ID].append(commit_data['commit'])
+                        commit[Git.COMMIT_EVENT].append(Git.EVENT_COMMIT)
+                        commit[Git.COMMIT_DATE].append(parser.parse(commit_data['AuthorDate']))
+                        commit[Git.COMMIT_OWNER].append(commit_data['Author'])
+                        commit[Git.FILE_EVENT] = Git.EVENT_FILE + f["action"]
+                        commit[Git.FILE_PATH] = f["file"]
+                        if f["added"] == "-":
+                            commit[Git.FILE_ADDED_LINES].append(0)
+                        else:
+                            commit[Git.FILE_ADDED_LINES].append(int(f["added"]))
+                        if f["removed"] == "-":
+                            commit[Git.FILE_REMOVED_LINES].append(0)
+                        else:
+                            commit[Git.FILE_REMOVED_LINES].append(int(f["removed"]))
+
+            if granularity == 3:
+                #TDB
+                pass
+
+        # Done in this way to have an order (and not a direct cast)
+        events[Git.COMMIT_ID] = commit[Git.COMMIT_ID]
+        events[Git.COMMIT_EVENT] = commit[Git.COMMIT_EVENT]
+        events[Git.COMMIT_DATE] = commit[Git.COMMIT_DATE]
+        events[Git.COMMIT_OWNER] = commit[Git.COMMIT_OWNER]
+        if granularity == 2:
+            events[Git.FILE_EVENT] = commit[Git.FILE_EVENT]
+            events[Git.FILE_PATH] = commit[Git.FILE_PATH]
+            events[Git.FILE_ADDED_LINES] = commit[Git.FILE_ADDED_LINES]
+            events[Git.FILE_REMOVED_LINES] = commit[Git.FILE_REMOVED_LINES]
+
+        return events
