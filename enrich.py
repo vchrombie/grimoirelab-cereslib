@@ -88,3 +88,43 @@ class PairProgramming(Enrich):
         # information and updating the values in column1
         return self.commits.append(pair_df)
 
+
+class TimeDifference(Enrich):
+    """ This class creates a new column with the difference in seconds
+    between two dates.
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column1, column2):
+        """ This method calculates the difference in seconds between
+            the 2 columns (column2 - column1)
+
+        The final result may provided negative values depending on the values
+        from column1 and column2.
+
+        :param column1: first column. Values in column1 must be datetime type
+        :param column2: second column. Values in column2 must be datetime type
+        :type column1: string
+        :type column2: string
+
+        :return: original dataframe with a new column with the difference
+            between column2 - column1
+        :rtype: pandas.DataFrame
+        """
+
+        if column1 not in self.data.columns or \
+           column2 not in self.data.columns:
+            return self.commits
+
+        self.data["timedifference"] = self.data[column2] - self.data[column1]
+
+        return self.data
