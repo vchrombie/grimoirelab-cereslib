@@ -197,23 +197,38 @@ class Git(Events):
             #TODO: this will fail if no files are found in a commit (eg: merge)
             if granularity == 2:
                 # Add extra info about files actions, if there were any
-                if commit_data.has_key("files"):
+                if "files" in commit_data.keys():
                     files = commit_data["files"]
                     for f in files:
                         commit[Git.COMMIT_ID].append(commit_data['commit'])
                         commit[Git.COMMIT_EVENT].append(Git.EVENT_COMMIT)
                         commit[Git.COMMIT_DATE].append(parser.parse(commit_data['AuthorDate']))
                         commit[Git.COMMIT_OWNER].append(commit_data['Author'])
-                        commit[Git.FILE_EVENT] = Git.EVENT_FILE + f["action"]
-                        commit[Git.FILE_PATH] = f["file"]
-                        if f["added"] == "-":
+                        if "action" in f.keys():
+                            commit[Git.FILE_EVENT].append(Git.EVENT_FILE + f["action"])
+                        else:
+                            commit[Git.FILE_EVENT].append("-")
+
+                        if "file" in f.keys():
+                            commit[Git.FILE_PATH].append(f["file"])
+                        else:
+                            commit[Git.FILE_PATH].append("-")
+
+                        if "added" in f.keys():
+                            if f["added"] == "-":
+                                commit[Git.FILE_ADDED_LINES].append(0)
+                            else:
+                                commit[Git.FILE_ADDED_LINES].append(int(f["added"]))
+                        else:
                             commit[Git.FILE_ADDED_LINES].append(0)
+
+                        if "removed" in f.keys():
+                            if f["removed"] == "-":
+                                commit[Git.FILE_REMOVED_LINES].append(0)
+                            else:
+                                commit[Git.FILE_REMOVED_LINES].append(int(f["removed"]))
                         else:
-                            commit[Git.FILE_ADDED_LINES].append(int(f["added"]))
-                        if f["removed"] == "-":
                             commit[Git.FILE_REMOVED_LINES].append(0)
-                        else:
-                            commit[Git.FILE_REMOVED_LINES].append(int(f["removed"]))
 
             if granularity == 3:
                 #TDB
