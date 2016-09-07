@@ -29,7 +29,9 @@ import scipy
 if not '..' in sys.path:
     sys.path.insert(0, '..')
 
-from enrich import PairProgramming
+from enrich import PairProgramming, TimeDifference
+
+from format import Format
 
 class TestEnrich(unittest.TestCase):
     """ Unit tests for Enrich classes
@@ -43,7 +45,6 @@ class TestEnrich(unittest.TestCase):
         # With empty dataframe and any columns, this always returns empty dataframe
         # A DataFrame with columns but not data is an empty DataFrame
         pair = PairProgramming(empty_df)
-        print pair.enrich("test1","test2")
         self.assertTrue(pair.enrich("test1","test2").empty)
         # With a dataframe with some data, this returns a non-empty dataframe
 
@@ -63,3 +64,32 @@ class TestEnrich(unittest.TestCase):
         self.assertFalse(enriched_df.empty)
         # Expected to add a new entry at the end of the dataframe
         self.assertEqual(len(enriched_df), 8)
+
+
+    def test_TimeDifference(self):
+        """ Several test cases for the TimeDifference class
+        """
+
+        empty_df = pandas.DataFrame()
+        # With empty dataframe and any columns this always returns emtpy datafram
+        # A DataFrame with columns but no data is an empty DataFrame
+        time = TimeDifference(empty_df)
+        self.assertTrue(time.enrich("fake_column1", "fake_column2").empty)
+
+        # A dataframe with some data, this returns a non-empty dataframe
+        csv_df = pandas.read_csv("data/enrich/timedifference.csv")
+        time = TimeDifference(csv_df)
+        format_ = Format()
+        time.data = format_.format_dates(time.data, ["date_author", "date_committer"])
+
+        enriched_df = time.enrich("fake_column1", "fake_column2")
+        self.assertFalse(enriched_df.empty)
+        # Expected to return the same df as fake columns do not exist
+        self.assertEqual(len(enriched_df), 7)
+
+        enriched_df = time.enrich("date_author", "date_committer")
+
+        self.assertEqual(len(enriched_df[enriched_df["timedifference"]>0]), 4)
+
+
+
