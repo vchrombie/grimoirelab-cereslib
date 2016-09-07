@@ -22,6 +22,8 @@
 
 import pandas
 
+import numpy as np
+
 class Enrich(object):
     """ Class that enriches information for a given dataset.
 
@@ -79,7 +81,7 @@ class PairProgramming(Enrich):
 
         # Select rows where values in column1 are different from
         # values in column2
-        pair_df = self.commits[self.commits[column1]<>self.commits[column2]]
+        pair_df = self.commits[self.commits[column1]!=self.commits[column2]]
         new_values = list(pair_df[column2])
         # Update values from column2
         pair_df[column1] = new_values
@@ -87,6 +89,46 @@ class PairProgramming(Enrich):
         # This adds at the end of the original dataframe those rows duplicating
         # information and updating the values in column1
         return self.commits.append(pair_df)
+
+
+class FileType(Enrich):
+    """ This class creates a new column with the file type
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided
+
+        :param data: original dataframe
+        : type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column):
+        """ This method adds a new column depending on the extension
+        of the file.
+
+        :param column: column where the file path is found
+        :type column: string
+
+        :return: returns the original dataframe with a new column named as
+                 'filetype' that contains information about its extension
+        :rtype: pandas.DataFrame
+        """
+
+        if column not in self.data:
+            return self.data
+
+        # Insert a new column with default values
+        self.data["filetype"] = 'Other'
+
+        # Insert 'Code' only in those rows that are
+        # detected as being source code thanks to its extension
+        reg = "\.c$|\.h$|\.cc$|\.cpp$|\.cxx$|\.c\+\+$|\.cp$"
+        self.data.loc[a[column].str.contains(reg)==True, 'filetype'] = 'Code'
+
+        return self.data
 
 
 class TimeDifference(Enrich):
@@ -123,8 +165,7 @@ class TimeDifference(Enrich):
 
         if column1 not in self.data.columns or \
            column2 not in self.data.columns:
-            return self.commits
+            return self.data
 
-        self.data["timedifference"] = self.data[column2] - self.data[column1]
-
+        self.data["timedifference"] = (self.data[column2] - self.data[column1]) / np.timedelta64(1, 's')
         return self.data
