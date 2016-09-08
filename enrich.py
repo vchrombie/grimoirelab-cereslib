@@ -131,6 +131,96 @@ class FileType(Enrich):
         return self.data
 
 
+class Gender(Enrich):
+    """ This class creates three new columns with the gender of
+    the name provided
+    """
+
+
+    def __init__(self, data, key=None):
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :param key: genderize key (optional)
+        :type data: pandas.DataFrame
+        :type key: string
+        """
+
+        from genderize import Genderize
+
+        self.data = data
+        self.gender = {} # init the name-gender dictionary
+        self.key = key
+
+        # Init the genderize connection
+        self.connection = Genderize()
+        if self.key:
+            self.connection = Genderize(api_key=self.key)
+
+    def enrich(self, column):
+        """ This method calculates thanks to the genderize.io API the gender
+        of a given name.
+
+        This method initially assumes that for the given
+        string, only the first word is the one containing the name
+        eg: Daniel Izquierdo <dizquierdo@bitergia.com>, Daniel would be the name.
+
+        If the same class instance is used in later gender searches, this stores
+        in memory a list of names and associated gender and probability. This is
+        intended to have faster identifications of the gender and less number of
+        API accesses.
+
+        :param column: column where the name is found
+        :type column: string
+
+        :return: original dataframe with four new columns:
+         * gender: male, female or unknown
+         * gender_probability: value between 0 and 1
+         * gender_count: number of names found in the Genderized DB
+         * gender_analyzed_name: name that was sent to the API for analysis
+        :rtype: pandas.DataFrame
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        splits = self.data[column].str.split(" ")
+        splits = splits.str[0]
+        self.data["gender_analyzed_name"] = splits
+        self.data["gender_probability"] = -1.0
+        self.data["gender"] = "-"
+        self.data["gender_count"] = -1
+
+        names = list(self.data["gender_analyzed_name"].unique())
+
+        #TODO Code for calling 10 names at the same time
+        #for ten_names in range(0, len(names), 10):
+            #gender_result = self.connection.get(names[ten_names:ten_names+10])
+            #for name in names[ten_names:ten_names+10]:
+        for name in names:
+            if name in self.gender.keys():
+                gender_result = self.gender[name]
+            else:
+                try:
+                    #TODO: some errors found due to encode utf-8 issues.
+                    #Adding a try-except in the meantime.
+                    gender_result = self.connection.get([name])[0]
+                except:
+                    continue
+
+                #Store info in the list of users
+                self.gender[name] = gender_result
+
+            #Update current dataset    
+            self.data.loc[self.data["gender_analyzed_name"]==name, 'gender'] = gender_result["gender"]
+            if "probability" in gender_result.keys():
+                self.data.loc[self.data["gender_analyzed_name"]==name, 'gender_probability'] = gender_result["probability"]
+                self.data.loc[self.data["gender_analyzed_name"]==name, 'gender_count'] = gender_result["count"]
+
+        return self.data
+
+
 class TimeDifference(Enrich):
     """ This class creates a new column with the difference in seconds
     between two dates.
