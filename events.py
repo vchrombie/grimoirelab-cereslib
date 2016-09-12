@@ -334,3 +334,89 @@ class Gerrit(Events):
 
         return events
 
+
+
+class Email(Events):
+    """ Class used to 'eventize' mailing list items
+
+    This splits information of each item based on a pre-configured mapping.
+    There are several levels of events. These levels were created as a way
+    to have more or less time consuming generation of events.
+    """
+
+    EVENT_OPEN = "EMAIL_SENT"
+
+    # Fields supported by this module (when a DataFrame is returned)
+    EMAIL_ID = "id"
+    EMAIL_EVENT = "eventtype"
+    EMAIL_DATE = "date"
+    EMAIL_OWNER = "owner"
+    EMAIL_SUBJECT = "subject"
+    EMAIL_BODY = "body"
+
+    def __init__(self, items):
+        """ Main constructor of the class
+
+        :param items: original list of JSON that contains all info about a commit
+        :type items: list
+        """
+
+        self.items = items
+
+    def eventize(self, granularity):
+        """ This splits the JSON information found at self.events into the
+        several events. For this there are three different levels of time
+        consuming actions: 1-soft, 2-medium and 3-hard.
+
+        Level 1 provides events about emails
+        Level 2 not implemented
+        Level 3 not implemented
+
+        :param granularity: Levels of time consuming actions to calculate events
+        :type granularity: integer
+
+        :returns: Pandas dataframe with splitted events.
+        :rtype: pandas.DataFrame
+        """
+
+
+        email = {}
+        # First level granularity
+        email[Email.EMAIL_ID] = []
+        email[Email.EMAIL_EVENT] = []
+        email[Email.EMAIL_DATE] = []
+        email[Email.EMAIL_OWNER] = []
+        email[Email.EMAIL_SUBJECT] = []
+        email[Email.EMAIL_BODY] = []
+
+        events = pandas.DataFrame()
+
+        for item in self.items:
+            email_data = item["data"]
+            if granularity == 1:
+                # Changeset submission date: filling a new event
+                email[Email.EMAIL_ID].append(email_data["Message-ID"])
+                email[Email.EMAIL_EVENT].append(Email.EVENT_OPEN)
+                email[Email.EMAIL_DATE].append(email_data["Date"])
+                email[Email.EMAIL_OWNER].append(email_data["From"])
+                email[Email.EMAIL_SUBJECT].append(email_data["Subject"])
+                email[Email.EMAIL_BODY].append(email_data["body"]["plain"])
+
+            if granularity == 2:
+                #TDB
+                pass
+
+            if granularity == 3:
+                #TDB
+                pass
+
+        # Done in this way to have an order (and not a direct cast)
+        events[Email.EMAIL_ID] = email[Email.EMAIL_ID]
+        events[Email.EMAIL_EVENT] = email[Email.EMAIL_EVENT]
+        events[Email.EMAIL_DATE] = email[Email.EMAIL_DATE]
+        events[Email.EMAIL_OWNER] = email[Email.EMAIL_OWNER]
+        events[Email.EMAIL_SUBJECT] = email[Email.EMAIL_SUBJECT]
+        events[Email.EMAIL_BODY] = email[Email.EMAIL_BODY]
+
+        return events
+
