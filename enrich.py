@@ -126,7 +126,7 @@ class FileType(Enrich):
         # Insert 'Code' only in those rows that are
         # detected as being source code thanks to its extension
         reg = "\.c$|\.h$|\.cc$|\.cpp$|\.cxx$|\.c\+\+$|\.cp$"
-        self.data.loc[a[column].str.contains(reg)==True, 'filetype'] = 'Code'
+        self.data.loc[self.data[column].str.contains(reg)==True, 'filetype'] = 'Code'
 
         return self.data
 
