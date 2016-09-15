@@ -397,10 +397,16 @@ class Email(Events):
                 # Changeset submission date: filling a new event
                 email[Email.EMAIL_ID].append(email_data["Message-ID"])
                 email[Email.EMAIL_EVENT].append(Email.EVENT_OPEN)
-                email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"]))
+                try:
+                    email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"]))
+                except:
+                    email[Email.EMAIL_DATE].append(parser.parse("1970-01-01"))
                 email[Email.EMAIL_OWNER].append(email_data["From"])
                 email[Email.EMAIL_SUBJECT].append(email_data["Subject"])
-                email[Email.EMAIL_BODY].append(email_data["body"]["plain"])
+                try:
+                    email[Email.EMAIL_BODY].append(email_data["body"]["plain"])
+                except:
+                    email[Email.EMAIL_BODY].append("None")
 
             if granularity == 2:
                 #TDB
