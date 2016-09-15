@@ -24,6 +24,8 @@ import pandas
 
 import numpy as np
 
+import re
+
 class Enrich(object):
     """ Class that enriches information for a given dataset.
 
@@ -131,6 +133,83 @@ class FileType(Enrich):
         return self.data
 
 
+class EmailFlag(Enrich):
+    """ This class adds specific events for the given
+    email body
+    """
+
+    FLAGS_REGEX = {
+                'Acked-by' : '^Acked-by:(?P<value>.+)$',
+                   'Cc' : '^Cc:(?P<value>.+)',
+                   'Fixes' : '^Fixes:(?P<value>.+)$',
+                   'From' : '^[Ff]rom:(?P<value>.+)$',
+                   'Reported-by' : '^Reported-by:(?P<value>.+)$',
+                   'Tested-by' : '^Tested-by:(?P<value>.+)$',
+                   'Reviewed-by' : '^Reviewed-by:(?P<value>.+)$',
+                   'Release-Acked-by' : '^Release-Acked-by:(?P<value>.+)$',
+                   'Signed-off-by' : '^Signed-off-by:(?P<value>.+)$',
+                   'Suggested-by' : '^Suggested-by:(?P<value>.+)$',
+                   }
+
+    def __parse_flags(self, body):
+        """Parse flags from a message"""
+        flags = []
+        values = []
+        lines = body.split('\n')
+        for l in lines:
+            for name in self.FLAGS_REGEX:
+                m = re.match(self.FLAGS_REGEX[name], l)
+
+                if m:
+                    flags.append(name)
+                    values.append(m.group("value"))
+
+        return flags, values
+
+    def __init__(self, data):
+
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column):
+        """ This method helps to identify flags in the emails.
+        As some communities may use the mailing list for the code
+        review process, specifig flags/tags are used to determine
+        some actions by the reviewers such as the moment when a
+        patch is approved to merged.
+
+        The list of supported flags are found in the FLAGS_REGEX
+        variable where. In addition to this, a flag usually has a
+        related developer where her name and email address are
+        specified. This is also covered by this flag analysis.
+
+        :param column: column where the text to analyze is found
+        :type data: string
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        flags_list = []
+        values_list = []
+        #Assuming the index of the dataframe is an integer
+        for i in list(range(len(self.data))):
+            flags, values = self.__parse_flags(self.data[column][i])
+            flags_list.append(flags)
+            values_list.append(values)
+
+        self.data["flags"] = flags_list
+        self.data["values"] = values_list
+
+        return self.data
+
+
 class Gender(Enrich):
     """ This class creates three new columns with the gender of
     the name provided
@@ -188,9 +267,9 @@ class Gender(Enrich):
         splits = self.data[column].str.split(" ")
         splits = splits.str[0]
         self.data["gender_analyzed_name"] = splits
-        self.data["gender_probability"] = -1.0
-        self.data["gender"] = "-"
-        self.data["gender_count"] = -1
+        self.data["gender_probability"] = 0
+        self.data["gender"] = "Unknown"
+        self.data["gender_count"] = 0
 
         names = list(self.data["gender_analyzed_name"].unique())
 
@@ -212,7 +291,8 @@ class Gender(Enrich):
                 #Store info in the list of users
                 self.gender[name] = gender_result
 
-            #Update current dataset    
+            #Update current dataset
+            if gender_result["gender"] is None: gender_result["gender"] = "NotKnown"
             self.data.loc[self.data["gender_analyzed_name"]==name, 'gender'] = gender_result["gender"]
             if "probability" in gender_result.keys():
                 self.data.loc[self.data["gender_analyzed_name"]==name, 'gender_probability'] = gender_result["probability"]
