@@ -210,6 +210,76 @@ class EmailFlag(Enrich):
         return self.data
 
 
+class SplitLists(Enrich):
+    """ This class look for lists in the given columns and append at the
+    end of the dataframe a row for each entry in those lists.
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, columns):
+        """ This method appends at the end of the dataframe as many
+        rows as items are found in the list of elemnents in the
+        provided columns.
+
+        This assumes that the length of the lists for the several
+        specified columns is the same. As an example, for the row A
+        {"C1":"V1", "C2":field1, "C3":field2, "C4":field3}
+        we have three cells with a list of four elements each of them:
+        * field1: [1,2,3,4]
+        * field2: ["a", "b", "c", "d"]
+        * field3: [1.1, 2.2, 3.3, 4.4]
+
+        This method converts each of the elements of each cell in a new
+        row keeping the columns name:
+
+        {"C1":"V1", "C2":1, "C3":"a", "C4":1.1}
+        {"C1":"V1", "C2":2, "C3":"b", "C4":2.2}
+        {"C1":"V1", "C2":3, "C3":"c", "C4":3.3}
+        {"C1":"V1", "C2":4, "C3":"d", "C4":4.4}
+
+        :param columns: list of strings
+        :rtype pandas.DataFrame
+        """
+
+        for column in columns:
+            if column not in self.data.columns:
+                return self.data
+
+        # Looking for the rows with columns with lists of more
+        # than one element
+        first_column = list(self.data[columns[0]])
+        count = 0
+        append_df = pandas.DataFrame()
+        for cell in first_column:
+            if len(cell) > 1:
+                # Interested in those lists with more
+                # than one element
+                df = pandas.DataFrame()
+                # Create a dataframe of N rows from the list
+                for column in columns:
+                    df[column] = self.data.loc[count, column]
+                # Repeat the original rows N times
+                extra_df = pandas.DataFrame([self.data.loc[count]]*len(df))
+                for column in columns:
+                    extra_df[column] = list(df[column])
+                append_df = append_df.append(extra_df, ignore_index = True)
+                extra_df = pandas.DataFrame()
+
+            count = count + 1
+
+        self.data = self.data.append(append_df, ignore_index=True)
+        return self.data
+
+
 class Gender(Enrich):
     """ This class creates three new columns with the gender of
     the name provided
