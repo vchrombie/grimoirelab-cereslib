@@ -260,7 +260,7 @@ class SplitLists(Enrich):
         count = 0
         append_df = pandas.DataFrame()
         for cell in first_column:
-            if len(cell) > 1:
+            if len(cell) >= 1:
                 # Interested in those lists with more
                 # than one element
                 df = pandas.DataFrame()
@@ -277,6 +277,49 @@ class SplitLists(Enrich):
             count = count + 1
 
         self.data = self.data.append(append_df, ignore_index=True)
+        return self.data
+
+
+class MaxMin(Enrich):
+    """ This class creates two new columns with the maximum and
+    minimum value of the given column
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, columns, groupby):
+        """ This method calculates the maximum and minimum value
+        of a given set of columns depending on another column.
+        This is the usual group by clause in SQL.
+
+        :param columns: list of columns to apply the max and min values
+        :param groupby: column use to calculate the max/min values
+        :type columns: list of strings
+        """
+
+        for column in columns:
+            if column not in self.data.columns:
+                return self.data
+
+        for column in columns:
+            df_grouped = self.data.groupby([groupby]).agg({column: 'max'})
+            df_grouped = df_grouped.reset_index()
+            df_grouped.rename(columns={column:'max_'+column}, inplace=True)
+            self.data = pandas.merge(self.data, df_grouped, how='left', on=[groupby])
+
+            df_grouped = self.data.groupby([groupby]).agg({column: 'min'})
+            df_grouped = df_grouped.reset_index()
+            df_grouped.rename(columns={column:'min_'+column}, inplace=True)
+            self.data = pandas.merge(self.data, df_grouped, how='left', on=[groupby])
+
         return self.data
 
 
@@ -336,7 +379,7 @@ class Gender(Enrich):
 
         splits = self.data[column].str.split(" ")
         splits = splits.str[0]
-        self.data["gender_analyzed_name"] = splits
+        self.data["gender_analyzed_name"] = splits.fillna("noname")
         self.data["gender_probability"] = 0
         self.data["gender"] = "Unknown"
         self.data["gender_count"] = 0
@@ -368,6 +411,7 @@ class Gender(Enrich):
                 self.data.loc[self.data["gender_analyzed_name"]==name, 'gender_probability'] = gender_result["probability"]
                 self.data.loc[self.data["gender_analyzed_name"]==name, 'gender_count'] = gender_result["count"]
 
+        self.data.fillna("noname")
         return self.data
 
 
@@ -409,3 +453,5 @@ class TimeDifference(Enrich):
 
         self.data["timedifference"] = (self.data[column2] - self.data[column1]) / np.timedelta64(1, 's')
         return self.data
+
+
