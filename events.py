@@ -398,7 +398,7 @@ class Email(Events):
                 email[Email.EMAIL_ID].append(email_data["Message-ID"])
                 email[Email.EMAIL_EVENT].append(Email.EVENT_OPEN)
                 try:
-                    email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"]))
+                    email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"], ignoretz=True))
                 except:
                     email[Email.EMAIL_DATE].append(parser.parse("1970-01-01"))
                 email[Email.EMAIL_OWNER].append(email_data["From"])
