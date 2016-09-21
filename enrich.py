@@ -214,8 +214,53 @@ class EmailFlag(Enrich):
         return self.data
 
 
+class SplitEmail(Enrich):
+    """ This class split the tuple 'name <email>' into 'name' and 'email'.
+    This adds two new columns named as 'user' and 'email to the provided
+    one
+    """
+
+    def __parse_addr(self, addr):
+        """ Parse email addresses
+        """
+
+        from email.utils import parseaddr
+
+        value = parseaddr(addr)
+        return value[0], value[1]
+
+    def __init__(self, data):
+        """ Main constructor oft he class
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column):
+        """ This method creates two new columns: user and email.
+        Those contain the information coming from the usual tuple of
+        user <email> found in several places like in the mailing lists
+        or the git repositories commit.
+
+        :param column: column to be used for this parser
+        :type column: string
+
+        :returns: dataframe with two new columns
+        :rtype: pandas.DataFrame
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        self.data["user"], self.data["email"] = zip(*self.data[column].map(self.__parse_addr))
+
+        return self.data
+
+
 class SplitLists(Enrich):
-    """ This class look for lists in the given columns and append at the
+    """ This class looks for lists in the given columns and append at the
     end of the dataframe a row for each entry in those lists.
     """
 
