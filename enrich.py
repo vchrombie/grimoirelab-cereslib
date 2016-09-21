@@ -162,7 +162,11 @@ class EmailFlag(Enrich):
 
                 if m:
                     flags.append(name)
-                    values.append(m.group("value"))
+                    values.append(m.group("value").strip())
+
+        if flags == []:
+            flags = ""
+            values = ""
 
         return flags, values
 
@@ -277,6 +281,7 @@ class SplitLists(Enrich):
             count = count + 1
 
         self.data = self.data.append(append_df, ignore_index=True)
+
         return self.data
 
 
