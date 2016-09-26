@@ -214,6 +214,59 @@ class EmailFlag(Enrich):
         return self.data
 
 
+class ToUTF8(Enrich):
+    """ This class helps to migrate (or ignore) the strings to utf-8
+    """
+
+    def __remove_surrogates(self, s, method='replace'):
+        """ Remove surrogates in the specified string
+        """
+
+        if type(s) != str:
+            return ""
+        if self.__is_surrogate_escaped(s):
+            return s.encode('utf-8', method).decode('utf-8')
+        return s
+
+    def __is_surrogate_escaped(self, text):
+        """ Checks if surrogate is escaped
+        """
+
+        try:
+            text.encode('utf-8')
+        except UnicodeEncodeError as e:
+            if e.reason == 'surrogates not allowed':
+                return True
+        return False
+
+    def __init__(self, data):
+        """ Main constructor
+
+        :parama data: Original dataset
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, columns):
+        """ This method convert to utf-8 the provided columns
+
+        :param columns: list of columns to convert to
+        :type columns: list of strings
+        :return: original dataframe with converted strings
+        :rtype: pandas.DataFrame
+        """
+
+        for column in columns:
+            if column not in self.data.columns:
+                return self.data
+
+        for column in columns:
+            a = self.data[column].apply(self.__remove_surrogates)
+            self.data[column] = a
+
+        return self.data
+
 class SplitEmail(Enrich):
     """ This class split the tuple 'name <email>' into 'name' and 'email'.
     This adds two new columns named as 'user' and 'email to the provided
