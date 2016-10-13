@@ -132,6 +132,108 @@ class Bugzilla(Events):
         return events
 
 
+class BugzillaRest(Events):
+    """ Class used to eventize Bugzilla Rest items
+
+    This splits each item information based on a pre-existing mapping.
+    """
+
+    EVENT_OPEN = "ISSUE_OPEN"
+
+    # Fields supported by this module (when a DataFrame is returned)
+    ISSUE_ID = "id"
+    ISSUE_EVENT = "eventtype"
+    ISSUE_DATE = "date"
+    ISSUE_OWNER = "owner"
+    ISSUE_ADDED = "added"
+    ISSUE_REMOVED = "removed"
+
+    def __init__(self, items):
+        """ Main constructor of the class
+
+        :param items: original list of JSON that contains all info about a bug
+        :type items: list
+        """
+
+        self.items = items
+
+
+    def eventize(self, granularity):
+        """ This splits the JSON information found at self.events into the
+        several events. For this there are three different levels of time
+        consuming actions: 1-soft, 2-medium and 3-hard.
+
+        Level 1 provides events about open and closed issues.
+        Level 2 provides events about the rest of the status updates.
+        Level 3 provides events about the rest of the values in any of the
+        fields.
+
+        :param granularity: Levels of time consuming actions to calculate events
+        :type granularity: integer
+
+        :returns: Pandas dataframe with splitted events.
+        :rtype: pandas.DataFrame
+        """
+
+
+        issue = {}
+        issue[BugzillaRest.ISSUE_ID] = []
+        issue[BugzillaRest.ISSUE_EVENT] = []
+        issue[BugzillaRest.ISSUE_DATE] = []
+        issue[BugzillaRest.ISSUE_OWNER] = []
+        issue[BugzillaRest.ISSUE_ADDED] = []
+        issue[BugzillaRest.ISSUE_REMOVED] = []
+
+        events = pandas.DataFrame()
+
+        for item in self.items:
+            bug_data = item["data"]
+            if granularity == 1:
+                # Open Date: filling a new event
+                issue[BugzillaRest.ISSUE_ID].append(bug_data['id'])
+                issue[BugzillaRest.ISSUE_EVENT].append(BugzillaRest.EVENT_OPEN)
+                issue[BugzillaRest.ISSUE_DATE].append(parser.parse(bug_data['creation_time']))
+                issue[BugzillaRest.ISSUE_OWNER].append(bug_data['creator_detail']["real_name"])
+                issue[BugzillaRest.ISSUE_ADDED].append("-")
+                issue[BugzillaRest.ISSUE_REMOVED].append("-")
+
+                # Adding the rest of the status updates (if there were any)
+                if 'history' in bug_data.keys():
+                    history = bug_data["history"]
+                    for step in history:
+                        # Filling a new event
+                        who = step["who"]
+                        when = parser.parse(step["when"])
+                        changes = step["changes"]
+                        for change in changes:
+                            issue[BugzillaRest.ISSUE_ID].append(bug_data['id'])
+                            issue[BugzillaRest.ISSUE_EVENT].append("ISSUE_" + change["field_name"])
+                            issue[BugzillaRest.ISSUE_ADDED].append(change["added"])
+                            issue[BugzillaRest.ISSUE_REMOVED].append(change["removed"])
+                            issue[BugzillaRest.ISSUE_DATE].append(when)
+                            issue[BugzillaRest.ISSUE_OWNER].append(who)
+
+            if granularity == 2:
+                #TBD Let's produce an index with all of the changes.
+                #    Let's have in mind the point about having the changes of initiating
+                #    the ticket.
+                pass
+
+            if granularity == 3:
+                #TDB
+                pass
+
+        # Done in this way to have an order (and not a direct cast)
+        events[BugzillaRest.ISSUE_ID] = issue[BugzillaRest.ISSUE_ID]
+        events[BugzillaRest.ISSUE_EVENT] = issue[BugzillaRest.ISSUE_EVENT]
+        events[BugzillaRest.ISSUE_DATE] = issue[BugzillaRest.ISSUE_DATE]
+        events[BugzillaRest.ISSUE_OWNER] = issue[BugzillaRest.ISSUE_OWNER]
+        events[BugzillaRest.ISSUE_ADDED] = issue[BugzillaRest.ISSUE_ADDED]
+        events[BugzillaRest.ISSUE_REMOVED] = issue[BugzillaRest.ISSUE_REMOVED]
+
+        return events
+
+
 class Git(Events):
     """ Class used to 'eventize' Git items
 
