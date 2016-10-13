@@ -49,6 +49,14 @@ class Bugzilla(Events):
     ISSUE_DATE = "date"
     ISSUE_OWNER = "owner"
 
+    def __bug_photo(self, item):
+        """ Retrieves basic information about the current status of the bug
+
+        That current status contains the photo of the bug at the moment of
+        the analysis. These fields will be used later for create extra
+        events
+        """
+
     def __init__(self, items):
         """ Main constructor of the class
 
@@ -98,15 +106,17 @@ class Bugzilla(Events):
                 if 'activity' in bug_data.keys():
                     activity = bug_data["activity"]
                     for change in activity:
-                        if change["What"] == "Status":
-                            # Filling a new event
-                            issue[Bugzilla.ISSUE_ID].append(bug_data['bug_id'][0]['__text__'])
-                            issue[Bugzilla.ISSUE_EVENT].append("ISSUE_" + change["Added"])
-                            issue[Bugzilla.ISSUE_DATE].append(parser.parse(change["When"]))
-                            issue[Bugzilla.ISSUE_OWNER].append(change["Who"])
+                        #if change["What"] == "Status":
+                        # Filling a new event
+                        issue[Bugzilla.ISSUE_ID].append(bug_data['bug_id'][0]['__text__'])
+                        issue[Bugzilla.ISSUE_EVENT].append("ISSUE_" + change["Added"])
+                        issue[Bugzilla.ISSUE_DATE].append(parser.parse(change["When"]))
+                        issue[Bugzilla.ISSUE_OWNER].append(change["Who"])
 
             if granularity == 2:
-                #TBD
+                #TBD Let's produce an index with all of the changes.
+                #    Let's have in mind the point about having the changes of initiating
+                #    the ticket.
                 pass
 
             if granularity == 3:
