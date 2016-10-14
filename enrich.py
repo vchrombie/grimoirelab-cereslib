@@ -222,6 +222,13 @@ class ToUTF8(Enrich):
         """ Remove surrogates in the specified string
         """
 
+        if type(s) == list and len(s) == 1:
+            if self.__is_surrogate_escaped(s[0]):
+                return s[0].encode('utf-8', method).decode('utf-8')
+            else:
+                return ""
+        if type(s) == list:
+            return ""
         if type(s) != str:
             return ""
         if self.__is_surrogate_escaped(s):
