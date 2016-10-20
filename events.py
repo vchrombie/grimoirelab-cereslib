@@ -389,6 +389,7 @@ class Gerrit(Events):
     CHANGESET_DATE = "date"
     CHANGESET_OWNER = "owner"
     CHANGESET_VALUE = "value"
+    CHANGESET_REPO = "repository"
 
     def __init__(self, items):
         """ Main constructor of the class
@@ -422,6 +423,7 @@ class Gerrit(Events):
         changeset[Gerrit.CHANGESET_DATE] = []
         changeset[Gerrit.CHANGESET_OWNER] = []
         changeset[Gerrit.CHANGESET_VALUE] = []
+        changeset[Gerrit.CHANGESET_REPO] = []
 
         events = pandas.DataFrame()
 
@@ -432,6 +434,7 @@ class Gerrit(Events):
                 changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                 changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_OPEN)
                 changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(changeset_data["createdOn"])))
+                changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                 if "name" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["name"]
                 elif "username" in changeset_data["owner"].keys():
@@ -448,6 +451,7 @@ class Gerrit(Events):
                        changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                        changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
                        changeset[Gerrit.CHANGESET_DATE].append(closing_date)
+                       changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                        changeset[Gerrit.CHANGESET_OWNER].append(changeset_data["owner"]["name"])
                        changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
@@ -457,15 +461,25 @@ class Gerrit(Events):
                     changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                     changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_SENT")
                     changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(patchset["createdOn"])))
+                    changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                     changeset[Gerrit.CHANGESET_OWNER].append(patchset["author"]["name"])
                     changeset[Gerrit.CHANGESET_VALUE].append(-10)
                     #print (patchset)
                     if "approvals" in patchset.keys():
                         for approval in patchset["approvals"]:
+                            if approval["type"] != "Code-Review":
+                                continue
                             changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                             changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_APPROVAL_" + approval["type"])
                             changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(approval["grantedOn"])))
-                            changeset[Gerrit.CHANGESET_OWNER].append(approval["by"]["name"])
+                            changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
+                            if "name" in approval["by"].keys():
+                                value = approval["by"]["name"]
+                            elif "username" in approval["by"].keys():
+                                value = approval["by"]["username"]
+                            elif "email" in approval["by"].keys():
+                                value = approval["by"]["email"]
+                            changeset[Gerrit.CHANGESET_OWNER].append(value)
                             changeset[Gerrit.CHANGESET_VALUE].append(int(approval["value"]))
 
             if granularity >= 3:
@@ -478,6 +492,7 @@ class Gerrit(Events):
         events[Gerrit.CHANGESET_DATE] = changeset[Gerrit.CHANGESET_DATE]
         events[Gerrit.CHANGESET_OWNER] = changeset[Gerrit.CHANGESET_OWNER]
         events[Gerrit.CHANGESET_VALUE] = changeset[Gerrit.CHANGESET_VALUE]
+        events[Gerrit.CHANGESET_REPO] = changeset[Gerrit.CHANGESET_REPO]
 
         return events
 
