@@ -133,6 +133,42 @@ class FileType(Enrich):
         return self.data
 
 
+class Projects(Enrich):
+    """ This class adds project info based on a pre-processed dataset
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column, projects):
+        """ This method adds a new column named as 'project'
+        that contains information about the associated project
+        that the event in 'column' belongs to.
+
+        :param column: column with information related to the project
+        :type column: string
+        :param projects: information about item - project
+        :type projects: pandas.DataFrame
+
+        :returns: original data frame with a new column named 'project'
+        :rtype: pandas.DataFrame
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        self.data = pandas.merge(self.data, projects, how='left', on=column)
+
+        return self.data
+
+
 class EmailFlag(Enrich):
     """ This class adds specific events for the given
     email body
