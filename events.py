@@ -388,6 +388,7 @@ class Gerrit(Events):
     CHANGESET_EVENT = "eventtype"
     CHANGESET_DATE = "date"
     CHANGESET_OWNER = "owner"
+    CHANGESET_VALUE = "value"
 
     def __init__(self, items):
         """ Main constructor of the class
@@ -420,17 +421,25 @@ class Gerrit(Events):
         changeset[Gerrit.CHANGESET_EVENT] = []
         changeset[Gerrit.CHANGESET_DATE] = []
         changeset[Gerrit.CHANGESET_OWNER] = []
+        changeset[Gerrit.CHANGESET_VALUE] = []
 
         events = pandas.DataFrame()
 
         for item in self.items:
             changeset_data = item["data"]
-            if granularity == 1:
+            if granularity >= 1:
                 # Changeset submission date: filling a new event
                 changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                 changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_OPEN)
                 changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(changeset_data["createdOn"])))
-                changeset[Gerrit.CHANGESET_OWNER].append(changeset_data["owner"]["username"])
+                if "name" in changeset_data["owner"].keys():
+                    value = changeset_data["owner"]["name"]
+                elif "username" in changeset_data["owner"].keys():
+                    value = changeset_data["owner"]["username"]
+                elif "email" in changeset_data["owner"].keys():
+                    value = changeset_data["owner"]["username"]
+                changeset[Gerrit.CHANGESET_OWNER].append(value)
+                changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
                 # Adding the closing status updates (if there was any)
                 if changeset_data["status"] == 'ABANDONED' or \
@@ -439,13 +448,27 @@ class Gerrit(Events):
                        changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                        changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
                        changeset[Gerrit.CHANGESET_DATE].append(closing_date)
-                       changeset[Gerrit.CHANGESET_OWNER].append(changeset_data["owner"]["username"])
+                       changeset[Gerrit.CHANGESET_OWNER].append(changeset_data["owner"]["name"])
+                       changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
-            if granularity == 2:
-                #TDB
-                pass
+            if granularity >= 2:
+                # Adding extra info about the patchsets
+                for patchset in changeset_data["patchSets"]:
+                    changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
+                    changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_SENT")
+                    changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(patchset["createdOn"])))
+                    changeset[Gerrit.CHANGESET_OWNER].append(patchset["author"]["name"])
+                    changeset[Gerrit.CHANGESET_VALUE].append(-10)
+                    #print (patchset)
+                    if "approvals" in patchset.keys():
+                        for approval in patchset["approvals"]:
+                            changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
+                            changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_APPROVAL_" + approval["type"])
+                            changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(approval["grantedOn"])))
+                            changeset[Gerrit.CHANGESET_OWNER].append(approval["by"]["name"])
+                            changeset[Gerrit.CHANGESET_VALUE].append(int(approval["value"]))
 
-            if granularity == 3:
+            if granularity >= 3:
                 #TDB
                 pass
 
@@ -454,6 +477,7 @@ class Gerrit(Events):
         events[Gerrit.CHANGESET_EVENT] = changeset[Gerrit.CHANGESET_EVENT]
         events[Gerrit.CHANGESET_DATE] = changeset[Gerrit.CHANGESET_DATE]
         events[Gerrit.CHANGESET_OWNER] = changeset[Gerrit.CHANGESET_OWNER]
+        events[Gerrit.CHANGESET_VALUE] = changeset[Gerrit.CHANGESET_VALUE]
 
         return events
 
