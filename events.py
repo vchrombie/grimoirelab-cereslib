@@ -252,6 +252,7 @@ class Git(Events):
     COMMIT_OWNER = "owner"
     COMMIT_COMMITTER = "committer"
     COMMIT_COMMITTER_DATE = "committer_date"
+    COMMIT_REPOSITORY = "repository"
 
     FILE_EVENT = "fileaction"
     FILE_PATH = "filepath"
@@ -293,6 +294,7 @@ class Git(Events):
         commit[Git.COMMIT_OWNER] = []
         commit[Git.COMMIT_COMMITTER] = []
         commit[Git.COMMIT_COMMITTER_DATE] = []
+        commit[Git.COMMIT_REPOSITORY] = []
 
         # Second level of granularity
         commit[Git.FILE_EVENT] = []
@@ -303,6 +305,7 @@ class Git(Events):
         events = pandas.DataFrame()
 
         for item in self.items:
+            repository = item["origin"]
             commit_data = item["data"]
             if granularity == 1:
                 commit[Git.COMMIT_ID].append(commit_data['commit'])
@@ -311,6 +314,7 @@ class Git(Events):
                 commit[Git.COMMIT_OWNER].append(commit_data['Author'])
                 commit[Git.COMMIT_COMMITTER].append(commit_data['Commit'])
                 commit[Git.COMMIT_COMMITTER_DATE].append(parser.parse(commit_data['CommitDate']))
+                commit[Git.COMMIT_REPOSITORY].append(repository)
 
             #TODO: this will fail if no files are found in a commit (eg: merge)
             if granularity == 2:
@@ -324,6 +328,7 @@ class Git(Events):
                         commit[Git.COMMIT_OWNER].append(commit_data['Author'])
                         commit[Git.COMMIT_COMMITTER].append(commit_data['Commit'])
                         commit[Git.COMMIT_COMMITTER_DATE].append(parser.parse(commit_data['CommitDate']))
+                        commit[Git.COMMIT_REPOSITORY].append(repository)
 
                         if "action" in f.keys():
                             commit[Git.FILE_EVENT].append(Git.EVENT_FILE + f["action"])
@@ -362,6 +367,7 @@ class Git(Events):
         events[Git.COMMIT_OWNER] = commit[Git.COMMIT_OWNER]
         events[Git.COMMIT_COMMITTER] = commit[Git.COMMIT_COMMITTER]
         events[Git.COMMIT_COMMITTER_DATE] = commit[Git.COMMIT_COMMITTER_DATE]
+        events[Git.COMMIT_REPOSITORY] = commit[Git.COMMIT_REPOSITORY]
         if granularity == 2:
             events[Git.FILE_EVENT] = commit[Git.FILE_EVENT]
             events[Git.FILE_PATH] = commit[Git.FILE_PATH]
@@ -440,7 +446,7 @@ class Gerrit(Events):
                 elif "username" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["username"]
                 elif "email" in changeset_data["owner"].keys():
-                    value = changeset_data["owner"]["username"]
+                    value = changeset_data["owner"]["email"]
                 changeset[Gerrit.CHANGESET_OWNER].append(value)
                 changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
@@ -452,7 +458,13 @@ class Gerrit(Events):
                        changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
                        changeset[Gerrit.CHANGESET_DATE].append(closing_date)
                        changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
-                       changeset[Gerrit.CHANGESET_OWNER].append(changeset_data["owner"]["name"])
+                       if "name" in changeset_data["owner"].keys():
+                           value = changeset_data["owner"]["name"]
+                       elif "username" in changeset_data["owner"].keys():
+                           value = changeset_data["owner"]["username"]
+                       elif "email" in changeset_data["owner"].keys():
+                           value = changeset_data["owner"]["email"]
+                       changeset[Gerrit.CHANGESET_OWNER].append(value)
                        changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
             if granularity >= 2:
@@ -462,7 +474,16 @@ class Gerrit(Events):
                     changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_SENT")
                     changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(patchset["createdOn"])))
                     changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
-                    changeset[Gerrit.CHANGESET_OWNER].append(patchset["author"]["name"])
+                    try:
+                        if "name" in patchset["author"].keys():
+                            value = patchset["author"]["name"]
+                        elif "username" in patchset["author"].keys():
+                            value = patchset["author"]["username"]
+                        elif "email" in patchset["author"].keys():
+                            value = patchset["author"]["email"]
+                    except:
+                        value = "patchset_noname"
+                    changeset[Gerrit.CHANGESET_OWNER].append(value)
                     changeset[Gerrit.CHANGESET_VALUE].append(-10)
                     #print (patchset)
                     if "approvals" in patchset.keys():
