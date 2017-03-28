@@ -96,21 +96,23 @@ class TestEnrich(unittest.TestCase):
         """ Test several cases for the Uuid class
         """
 
+        # Empty LEFT dataframe
         empty_df = pandas.DataFrame()
         uuid = Uuid(empty_df, file_path='data/enrich/uuids.csv')
 
         enriched_df = uuid.enrich(['name', 'email'])
 
-        # If left df is empty, nothing should be merged resulting in an empty df
+        # If LEFT df is empty, nothing should be merged resulting in an empty df
         self.assertTrue(enriched_df.empty)
 
+        # Load test data from CSV files
         authors_df = pandas.read_csv("data/enrich/authors.csv")
         uuid = Uuid(authors_df, file_path='data/enrich/uuids.csv')
 
         enriched_df = uuid.enrich(['name', 'email'])
 
         self.assertFalse(enriched_df.empty)
-        # Merged len must be equal to left df len
+        # Merged len must be equal to LEFT df len
         self.assertEqual(len(enriched_df), len(authors_df))
 
         # Check rows that should store same uuid, i.e., same author
