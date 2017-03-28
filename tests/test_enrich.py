@@ -29,7 +29,7 @@ import scipy
 if not '..' in sys.path:
     sys.path.insert(0, '..')
 
-from enrich import PairProgramming, TimeDifference
+from enrich import PairProgramming, TimeDifference, Uuid
 
 from format import Format
 
@@ -89,7 +89,45 @@ class TestEnrich(unittest.TestCase):
 
         enriched_df = time.enrich("date_author", "date_committer")
 
-        self.assertEqual(len(enriched_df[enriched_df["timedifference"]>0]), 4)
+        self.assertEqual(len(enriched_df[enriched_df["timedifference"] > 0]), 4)
 
 
+    def test_Uuid(self):
+        """ Test several cases for the Uuid class
+        """
 
+        empty_df = pandas.DataFrame()
+        uuid = Uuid(empty_df, file_path='data/enrich/uuids.csv')
+
+        enriched_df = uuid.enrich(['name', 'email'])
+
+        # If left df is empty, nothing should be merged resulting in an empty df
+        self.assertTrue(enriched_df.empty)
+
+        authors_df = pandas.read_csv("data/enrich/authors.csv")
+        uuid = Uuid(authors_df, file_path='data/enrich/uuids.csv')
+
+        enriched_df = uuid.enrich(['name', 'email'])
+
+        self.assertFalse(enriched_df.empty)
+        # Merged len must be equal to left df len
+        self.assertEqual(len(enriched_df), len(authors_df))
+
+        # Check rows that should store same uuid, i.e., same author
+        self.assertEqual(len(enriched_df[enriched_df['name'] == 'pepe']), 2)
+        self.assertEqual(len(enriched_df[enriched_df['name'] == 'John Rambo']), 3)
+
+        pepe_df = enriched_df[enriched_df['name'] == 'pepe']
+        pepe_uuid = '0007b2fd4dbb5090a848c50717966a15a1772112'
+        self.assertEqual(pepe_df.iloc[[0]]['uuid'].item(), pepe_uuid)
+        self.assertEqual(pepe_df.iloc[[1]]['uuid'].item(), pepe_uuid)
+
+        john_df = enriched_df[enriched_df['name'] == 'John Rambo']
+        john_uuid = '000eabca391efd736dd8438e4d220b3f00808065'
+        self.assertEqual(john_df.iloc[[0]]['uuid'].item(), john_uuid)
+        self.assertEqual(john_df.iloc[[1]]['uuid'].item(), john_uuid)
+        self.assertEqual(john_df.iloc[[2]]['uuid'].item(), john_uuid)
+
+
+if __name__ == '__main__':
+    unittest.main()
