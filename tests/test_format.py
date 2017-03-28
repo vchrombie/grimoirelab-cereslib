@@ -53,3 +53,6 @@ class TestFormat(unittest.TestCase):
         df["test"] = scipy.zeros(10)
 
         self.assertFalse(Format().fill_missing_fields(df, empty_columns).empty)
+
+if __name__ == '__main__':
+    unittest.main()
