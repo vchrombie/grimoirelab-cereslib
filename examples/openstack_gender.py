@@ -130,60 +130,60 @@ def ESConnection():
             if option == 'port': port = parser.get(section, option)
             if option == 'path': path = parser.get(section, option)
             if option == 'genderize_key': genderize_key = parser.get(section, option)
-            #if option == 'index_gerrit_raw': es_read_index = parser.get(section, option)
-            if option == 'index_git_raw': es_read_index = parser.get(section, option)
+            if option == 'index_gerrit_raw': es_read_gerrit_index = parser.get(section, option)
+            if option == 'index_git_raw': es_read_git_index = parser.get(section, option)
 
             if option == 'host_output': host_output = parser.get(section, option)
             if option == 'port_output': port_output = parser.get(section, option)
             if option == 'user_output': user_output = parser.get(section, option)
             if option == 'password_output': password_output = parser.get(section, option)
             if option == 'path_output': path_output = parser.get(section, option)
-            #if option == 'index_gerrit_output': es_write_index = parser.get(section, option)
-            if option == 'index_git_output': es_write_index = parser.get(section, option)
+            if option == 'index_gerrit_output': es_write_gerrit_index = parser.get(section, option)
+            if option == 'index_git_output': es_write_git_index = parser.get(section, option)
 
 
     connection = "https://" + user + ":" + password + "@" + host + ":" + port + "/"
     print (connection)
     es_read = Elasticsearch([connection], use_ssl=True, verity_certs=True, ca_cert=certifi.where(), scroll='300m')
-    #es_read = Elasticsearch(["127.0.0.1:9200"], scroll='20m')
 
     connection_output = "https://" + user_output + ":" + password_output + "@" + host_output + ":" + port_output + "/" + path_output
     es_write = Elasticsearch([connection_output], use_ssl=True, verity_certs=True, ca_cert=certifi.where(), scroll='300m')
 
-    return es_read, es_write, es_read_index, es_write_index, genderize_key
+    return es_read, es_write, es_read_git_index, es_read_gerrit_index, \
+           es_write_git_index, es_write_gerrit_index, genderize_key
 
 
 def openstack_projects():
 
-    import json
+    import yaml
 
-    fd = open("openstack.json", "r")
-    json_file = fd.read()
-    json_data = json.loads(json_file)
-    repositories = []
+    fd = open("openstack_projects.yaml", "r")
+    yaml_text = fd.read()
+    yaml_data = yaml.load(yaml_text)
+
+    urls = []
+    repos = []
     projects = []
-    original_projects = []
-    for project in json_data["projects"].keys():
-        project_info = json_data["projects"][project]
-        for repo in project_info["source_repo"]:
-            projects.append(project)
-            repositories.append(repo["url"])
-            original_projects.append(repo["url"].split("/")[-2] + "/" + repo["url"].split("/")[-1])
 
+    for project in yaml_data:
+        deliverables = yaml_data[project]["deliverables"]
+        
+        for subproject in deliverables.keys():    
+            repositories = deliverables[subproject]['repos']
+            for repo in repositories:
+                projects.append(project)
+                repos.append(repo)
+                urls.append("git://git.openstack.org/" + repo)
     df = pandas.DataFrame()
     df["projects"] = projects
-    #df["urls"] = repositories
-
-    # Not used as repositories are url in the enriched indexes
-    #df["repository"] = original_projects
-    df["repository"] = repositories
+    df["repository"] = repos
+    df["urls"] = urls
 
     return df
 
 def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
 
-    #TODO
-    #projects = openstack_projects()
+    projects = openstack_projects()
 
     es_write.indices.delete(es_write_index, ignore=[400, 404])
     es_write.indices.create(es_write_index, body=MAPPING_GERRIT)
@@ -206,7 +206,9 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
             print (cont)
 
             # Adding projects information
-            #events_df = pandas.merge(events_df, projects, how='left', on='repository')
+            print (events_df.columns)
+            print (projects.columns)
+            events_df = pandas.merge(events_df, projects, how='left', on='repository')
 
             # Adding gender info
             if first:
@@ -239,8 +241,7 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
 
 def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
 
-    #projects = openstack_projects()
-
+    projects = openstack_projects()
 
     es_write.indices.delete(es_write_index, ignore=[400, 404])
     es_write.indices.create(es_write_index, body=MAPPING_GIT)
@@ -258,7 +259,7 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
     for item in s.scan():
         commits.append(item.to_dict())
 
-        if cont % 7500 == 0:
+        if cont % 15000 == 0:
             git_events = events.Git(commits)
             events_df = git_events.eventize(2)
 
@@ -291,7 +292,11 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
             splitemail = SplitEmail(events_df)
             events_df = splitemail.enrich("owner")
 
-            #events_df = pandas.merge(events_df, projects, how='left', on='repository')
+            # Add projects information
+            projects["repository"] = projects["urls"]
+            projects = projects.drop("urls", 1)
+            
+            events_df = pandas.merge(events_df, projects, how='left', on='repository')
 
             #all_files = all_files.append(events_df)
             #test = events_df.to_dict("index")
@@ -321,11 +326,12 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
 
 def main():
 
-    es_read, es_write, es_read_index, es_write_index, key = ESConnection()
+    es_read, es_write, es_read_git_index, es_read_gerrit_index, \
+    es_write_git_index, es_write_gerrit_index, key = ESConnection()
 
-    #analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key)
+    analyze_gerrit(es_read, es_write, es_read_gerrit_index, es_write_gerrit_index, key)
 
-    analyze_git(es_read, es_write, es_read_index, es_write_index, key)
+    analyze_git(es_read, es_write, es_read_git_index, es_write_git_index, key)
 
 
 if __name__ == "__main__":
