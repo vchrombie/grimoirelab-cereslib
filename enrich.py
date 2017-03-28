@@ -600,4 +600,48 @@ class TimeDifference(Enrich):
         self.data["timedifference"] = (self.data[column2] - self.data[column1]) / np.timedelta64(1, 's')
         return self.data
 
+class Uuid(Enrich):
+    """ This class adds new columns with the uuid of a given identity. If more
+    not common columns (those not used to decide how to merge rows) are
+    provided together with the uuid within the CSV file, all of them will also
+    be merged in the resulting dataframe.
+    """
 
+
+    def __init__(self, data, file_path='data/uuids.csv'):
+        """ Main constructor of the class where the original dataframe
+        is provided and the dataframe containing identities and their
+        uuids is loaded from CSV file.
+
+        :param data: original dataframe
+        :param file_path: uuids file path (optional)
+        :type data: pandas.DataFrame
+        :type file_path: string
+        """
+
+        self.data = data
+
+        # Read csv to data frame, read '\N' (null in MySQL export format) also
+        # as NaN (this is the way pandas deal with null values)
+        self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N')
+
+    def enrich(self, columns):
+        """ Merges the original dataframe with corresponding entity uuids based
+        on the given columns. Also merges other additional information
+        associated to uuids provided in the uuids dataframe, if any.
+
+        :param columns: columns to match for merging
+        :type column: string array
+
+        :return: original dataframe with at least one new column:
+         * uuid: identity unique identifier
+        :rtype: pandas.DataFrame
+        """
+
+        for column in columns:
+            if column not in self.data.columns:
+                return self.data
+
+        self.data = pandas.merge(self.data, self.uuids_df, how='left', on=columns)
+
+        return self.data
