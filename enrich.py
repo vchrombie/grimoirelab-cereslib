@@ -17,6 +17,7 @@
 #
 # Authors:
 #   Daniel Izquierdo Cortazar <dizquierdo@bitergia.com>
+#   Alberto Perez <alpgarcia@bitergia.com>
 #
 
 
@@ -623,7 +624,9 @@ class Uuid(Enrich):
 
         # Read csv to data frame, read '\N' (null in MySQL export format) also
         # as NaN (this is the way pandas deal with null values)
-        self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N')
+        self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N', sep='&&&')
+        self.uuids_df.drop('username', 1)
+        self.uuids_df.drop_duplicates(subset=['user', 'email'], inplace=True)
 
     def enrich(self, columns):
         """ Merges the original dataframe with corresponding entity uuids based
@@ -643,5 +646,6 @@ class Uuid(Enrich):
                 return self.data
 
         self.data = pandas.merge(self.data, self.uuids_df, how='left', on=columns)
+        self.data = self.data.fillna("notavailable")
 
         return self.data
