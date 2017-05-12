@@ -16,6 +16,7 @@
 #
 # Authors:
 #     Daniel Izquierdo <dizquierdo@bitergia.com>
+#     Alberto Perez <alpgarcia@bitergia.com>
 #
 
 import sys
