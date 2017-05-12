@@ -441,6 +441,7 @@ class Gerrit(Events):
                 changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_OPEN)
                 changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(changeset_data["createdOn"])))
                 changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
+                value = "notknown"
                 if "name" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["name"]
                 elif "username" in changeset_data["owner"].keys():
@@ -458,6 +459,7 @@ class Gerrit(Events):
                        changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
                        changeset[Gerrit.CHANGESET_DATE].append(closing_date)
                        changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
+                       value = "notknown"
                        if "name" in changeset_data["owner"].keys():
                            value = changeset_data["owner"]["name"]
                        elif "username" in changeset_data["owner"].keys():

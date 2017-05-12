@@ -476,14 +476,16 @@ class Gender(Enrich):
     """
 
 
-    def __init__(self, data, key=None):
+    def __init__(self, data, key=None, gender_file=None):
         """ Main constructor of the class where the original dataframe
         is provided.
 
         :param data: original dataframe
         :param key: genderize key (optional)
+        :param gender_file: file with gender info, used as cache
         :type data: pandas.DataFrame
         :type key: string
+        :type gender_file: string (as filepath)
         """
 
         from genderize import Genderize
@@ -491,11 +493,25 @@ class Gender(Enrich):
         self.data = data
         self.gender = {} # init the name-gender dictionary
         self.key = key
+        self.gender_file = gender_file
 
         # Init the genderize connection
         self.connection = Genderize()
         if self.key:
             self.connection = Genderize(api_key=self.key)
+
+        if self.gender_file:
+            # This file is used as cache for the gender info
+            # This helps to avoid calling once and again to the API
+            fd = open(gender_file, "r")
+            lines = fd.readlines()
+            fd.close()
+            #TODO: fix hardcoded code when reading columns and using
+            #      separators
+            for line in lines:
+                gender_data = line.split("\t")
+                self.gender[gender_data[1]] = {"gender_analyzed_name":gender_data[1],
+                                                "gender":gender_data[2]}
 
     def enrich(self, column):
         """ This method calculates thanks to the genderize.io API the gender
@@ -533,10 +549,6 @@ class Gender(Enrich):
 
         names = list(self.data["gender_analyzed_name"].unique())
 
-        #TODO Code for calling 10 names at the same time
-        #for ten_names in range(0, len(names), 10):
-            #gender_result = self.connection.get(names[ten_names:ten_names+10])
-            #for name in names[ten_names:ten_names+10]:
         for name in names:
             if name in self.gender.keys():
                 gender_result = self.gender[name]
