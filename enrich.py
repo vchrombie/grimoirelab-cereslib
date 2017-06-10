@@ -331,6 +331,50 @@ class EmailFlag(Enrich):
 
         return self.data
 
+class SplitEmailDomain(Enrich):
+    """ This class returns a new column with the domain of the email
+    analyzed
+    """
+
+    def __parse_email(self, email):
+        """ This function returns the domain of a given email
+        """
+
+        try:
+            return email.split('@')[1]
+        except:
+            return "unknown"
+
+
+    def __init__(self, data):
+
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+    def enrich(self, column):
+        """ This enricher returns the same dataframe
+        with a new column named 'domain'.
+        That column is the result of splitting the
+        email address of another column. If there is
+        not a proper email address an 'unknown'
+        domain is returned.
+
+        :param column: column where the text to analyze is found
+        :type data: string
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        self.data['domain'] = self.data[column].apply(lambda x: self.__parse_email(x))
+        return self.data
+
 
 class ToUTF8(Enrich):
     """ This class helps to migrate (or ignore) the strings to utf-8
