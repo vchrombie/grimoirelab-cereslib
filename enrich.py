@@ -169,6 +169,87 @@ class Projects(Enrich):
 
         return self.data
 
+class MessageLogFlag(Enrich):
+    """ This class adds specific events for the
+    given message log body
+    """
+
+    FLAGS_REGEX = {'Patch by Blink' : '\s*Patch by (?P<value>.+)$',
+                   'Patch by WebKit' : '\s*Patch by (?P<value>.+) on .+$',
+                   'Reviewed by WebKit': '\s*Reviewed by (?P<value>.+) on .+$'
+                  }
+
+
+    def __parse_flags(self, body):
+        """Parse flags from a message"""
+        flags = []
+        values = []
+        lines = body.split('\n')
+        for l in lines:
+            for name in self.FLAGS_REGEX:
+                m = re.match(self.FLAGS_REGEX[name], l)
+
+                if m:
+                    flags.append(name)
+                    values.append(m.group("value").strip())
+
+        # TODO: this should be more consistent. Either
+        # returning a list of strings or strings
+        if flags == []:
+            flags = ""
+            values = ""
+
+        if len(flags) == 1:
+            flags = flags[0]
+            values = values[0]
+
+        return flags, values
+
+
+    def __init__(self, data):
+
+        """ Main constructor of the class where the original dataframe
+        is provided.
+
+        :param data: original dataframe
+        :type data: pandas.DataFrame
+        """
+
+        self.data = data
+
+
+    def enrich(self, column):
+        """ This method helps to identify flags in the message log.
+        As some communities may use the log message for the code
+        authorship, specifig flags/tags are used to determine
+        some actions by the authors or reviewers such who is
+        the author or the reviewer is.
+
+        The list of supported flags are found in the FLAGS_REGEX
+        variable. In addition to this, a flag usually has a
+        related developer where her name and email address are
+        specified. This is also covered by this flag analysis.
+
+        :param column: column where the text to analyze is found
+        :type data: string
+        """
+
+        if column not in self.data.columns:
+            return self.data
+
+        flags_list = []
+        values_list = []
+        #Assuming the index of the dataframe is an integer
+        for i in list(range(len(self.data))):
+            flags, values = self.__parse_flags(self.data[column][i])
+            flags_list.append(flags)
+            values_list.append(values)
+
+        self.data["flags"] = flags_list
+        self.data["values"] = values_list
+
+        return self.data
+
 
 class EmailFlag(Enrich):
     """ This class adds specific events for the given
