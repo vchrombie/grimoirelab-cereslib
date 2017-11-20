@@ -253,7 +253,11 @@ class Git(Events):
     COMMIT_COMMITTER = "committer"
     COMMIT_COMMITTER_DATE = "committer_date"
     COMMIT_REPOSITORY = "repository"
-    COMMIT_MESSAGE = 'message'
+    COMMIT_MESSAGE = "message"
+    COMMIT_NUM_FILES = "num_files"
+    COMMIT_ADDED_LINES = "num_added_lines"
+    COMMIT_REMOVED_LINES ="num_removed_lines"
+
 
     FILE_EVENT = "fileaction"
     FILE_PATH = "filepath"
@@ -297,6 +301,9 @@ class Git(Events):
         commit[Git.COMMIT_COMMITTER_DATE] = []
         commit[Git.COMMIT_REPOSITORY] = []
         commit[Git.COMMIT_MESSAGE] = []
+        commit[Git.COMMIT_NUM_FILES] = []
+        commit[Git.COMMIT_ADDED_LINES] = []
+        commit[Git.COMMIT_REMOVED_LINES] = []
 
         # Second level of granularity
         commit[Git.FILE_EVENT] = []
@@ -310,6 +317,8 @@ class Git(Events):
             repository = item["origin"]
             commit_data = item["data"]
             if granularity == 1:
+                git_keys = commit_data.keys()
+
                 commit[Git.COMMIT_ID].append(commit_data['commit'])
                 commit[Git.COMMIT_EVENT].append(Git.EVENT_COMMIT)
                 commit[Git.COMMIT_DATE].append(parser.parse(commit_data['AuthorDate']))
@@ -317,7 +326,22 @@ class Git(Events):
                 commit[Git.COMMIT_COMMITTER].append(commit_data['Commit'])
                 commit[Git.COMMIT_COMMITTER_DATE].append(parser.parse(commit_data['CommitDate']))
                 commit[Git.COMMIT_REPOSITORY].append(repository)
-                commit[Git.COMMIT_MESSAGE].append(commit_data['message'])
+                if 'message' in git_keys:
+                    commit[Git.COMMIT_MESSAGE].append(commit_data['message'])
+                else:
+                    commit[Git.COMMIT_MESSAGE].append('')
+
+                added_lines = 0
+                removed_lines = 0
+                files = commit_data["files"]
+                commit[Git.COMMIT_NUM_FILES] = int(len(files))
+                for f in files:
+                    if "added" in f.keys() and f["added"] != "-":
+                        added_lines = added_lines + int(f["added"])
+                    if "removed" in f.keys() and f["removed"] != "-":
+                        removed_lines = removed_lines + int(f["removed"])
+                commit[Git.COMMIT_ADDED_LINES] = added_lines
+                commit[Git.COMMIT_REMOVED_LINES] = removed_lines
 
             #TODO: this will fail if no files are found in a commit (eg: merge)
             if granularity == 2:
@@ -332,7 +356,10 @@ class Git(Events):
                         commit[Git.COMMIT_COMMITTER].append(commit_data['Commit'])
                         commit[Git.COMMIT_COMMITTER_DATE].append(parser.parse(commit_data['CommitDate']))
                         commit[Git.COMMIT_REPOSITORY].append(repository)
-                        commit[Git.COMMIT_MESSAGE].append(commit_data['message'])
+                        try:
+                            commit[Git.COMMIT_MESSAGE].append(commit_data['message'])
+                        except:
+                            commit[Git.COMMIT_MESSAGE].append("")
 
                         if "action" in f.keys():
                             commit[Git.FILE_EVENT].append(Git.EVENT_FILE + f["action"])
@@ -373,6 +400,9 @@ class Git(Events):
         events[Git.COMMIT_COMMITTER_DATE] = commit[Git.COMMIT_COMMITTER_DATE]
         events[Git.COMMIT_REPOSITORY] = commit[Git.COMMIT_REPOSITORY]
         events[Git.COMMIT_MESSAGE] = commit[Git.COMMIT_MESSAGE]
+        events[Git.COMMIT_NUM_FILES] = commit[Git.COMMIT_NUM_FILES]
+        events[Git.COMMIT_ADDED_LINES] = commit[Git.COMMIT_ADDED_LINES]
+        events[Git.COMMIT_REMOVED_LINES] = commit [Git.COMMIT_REMOVED_LINES]
         if granularity == 2:
             events[Git.FILE_EVENT] = commit[Git.FILE_EVENT]
             events[Git.FILE_PATH] = commit[Git.FILE_PATH]
@@ -399,6 +429,7 @@ class Gerrit(Events):
     CHANGESET_EVENT = "eventtype"
     CHANGESET_DATE = "date"
     CHANGESET_OWNER = "owner"
+    CHANGESET_EMAIL = "email"
     CHANGESET_VALUE = "value"
     CHANGESET_REPO = "repository"
 
@@ -433,6 +464,7 @@ class Gerrit(Events):
         changeset[Gerrit.CHANGESET_EVENT] = []
         changeset[Gerrit.CHANGESET_DATE] = []
         changeset[Gerrit.CHANGESET_OWNER] = []
+        changeset[Gerrit.CHANGESET_EMAIL] = []
         changeset[Gerrit.CHANGESET_VALUE] = []
         changeset[Gerrit.CHANGESET_REPO] = []
 
@@ -446,14 +478,16 @@ class Gerrit(Events):
                 changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_OPEN)
                 changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(changeset_data["createdOn"])))
                 changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
-                value = "notknown"
+                value = email = "notknown"
                 if "name" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["name"]
                 elif "username" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["username"]
                 elif "email" in changeset_data["owner"].keys():
                     value = changeset_data["owner"]["email"]
+                    email = changeset_data["owner"]["email"]
                 changeset[Gerrit.CHANGESET_OWNER].append(value)
+                changeset[Gerrit.CHANGESET_EMAIL].append(email)
                 changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
                 # Adding the closing status updates (if there was any)
@@ -464,14 +498,16 @@ class Gerrit(Events):
                        changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
                        changeset[Gerrit.CHANGESET_DATE].append(closing_date)
                        changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
-                       value = "notknown"
+                       value = email = "notknown"
                        if "name" in changeset_data["owner"].keys():
                            value = changeset_data["owner"]["name"]
-                       elif "username" in changeset_data["owner"].keys():
+                       if "username" in changeset_data["owner"].keys():
                            value = changeset_data["owner"]["username"]
-                       elif "email" in changeset_data["owner"].keys():
+                       if "email" in changeset_data["owner"].keys():
                            value = changeset_data["owner"]["email"]
+                           email = changeset_data["owner"]["email"]
                        changeset[Gerrit.CHANGESET_OWNER].append(value)
+                       changeset[Gerrit.CHANGESET_EMAIL].append(email)
                        changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
             if granularity >= 2:
@@ -482,15 +518,18 @@ class Gerrit(Events):
                     changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(patchset["createdOn"])))
                     changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                     try:
+                        email = "patchset_noname"
                         if "name" in patchset["author"].keys():
                             value = patchset["author"]["name"]
-                        elif "username" in patchset["author"].keys():
+                        if "username" in patchset["author"].keys():
                             value = patchset["author"]["username"]
-                        elif "email" in patchset["author"].keys():
+                        if "email" in patchset["author"].keys():
                             value = patchset["author"]["email"]
+                            email = patchset["author"]["email"]
                     except:
                         value = "patchset_noname"
                     changeset[Gerrit.CHANGESET_OWNER].append(value)
+                    changeset[Gerrit.CHANGESET_EMAIL].append(email)
                     changeset[Gerrit.CHANGESET_VALUE].append(-10)
                     #print (patchset)
                     if "approvals" in patchset.keys():
@@ -501,13 +540,16 @@ class Gerrit(Events):
                             changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_APPROVAL_" + approval["type"])
                             changeset[Gerrit.CHANGESET_DATE].append(datetime.fromtimestamp(int(approval["grantedOn"])))
                             changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
+                            email = "approval_noname"
                             if "name" in approval["by"].keys():
                                 value = approval["by"]["name"]
                             elif "username" in approval["by"].keys():
                                 value = approval["by"]["username"]
                             elif "email" in approval["by"].keys():
                                 value = approval["by"]["email"]
+                                email = approval["by"]["email"]
                             changeset[Gerrit.CHANGESET_OWNER].append(value)
+                            changeset[Gerrit.CHANGESET_EMAIL].append(email)
                             changeset[Gerrit.CHANGESET_VALUE].append(int(approval["value"]))
 
             if granularity >= 3:
@@ -519,6 +561,7 @@ class Gerrit(Events):
         events[Gerrit.CHANGESET_EVENT] = changeset[Gerrit.CHANGESET_EVENT]
         events[Gerrit.CHANGESET_DATE] = changeset[Gerrit.CHANGESET_DATE]
         events[Gerrit.CHANGESET_OWNER] = changeset[Gerrit.CHANGESET_OWNER]
+        events[Gerrit.CHANGESET_EMAIL] = changeset[Gerrit.CHANGESET_EMAIL]
         events[Gerrit.CHANGESET_VALUE] = changeset[Gerrit.CHANGESET_VALUE]
         events[Gerrit.CHANGESET_REPO] = changeset[Gerrit.CHANGESET_REPO]
 
@@ -543,6 +586,7 @@ class Email(Events):
     EMAIL_OWNER = "owner"
     EMAIL_SUBJECT = "subject"
     EMAIL_BODY = "body"
+    EMAIL_ORIGIN = "mailinglist"
 
     def __init__(self, items):
         """ Main constructor of the class
@@ -578,10 +622,12 @@ class Email(Events):
         email[Email.EMAIL_OWNER] = []
         email[Email.EMAIL_SUBJECT] = []
         email[Email.EMAIL_BODY] = []
+        email[Email.EMAIL_ORIGIN] = []
 
         events = pandas.DataFrame()
 
         for item in self.items:
+            origin = item["origin"]
             email_data = item["data"]
             if granularity == 1:
                 # Changeset submission date: filling a new event
@@ -597,6 +643,7 @@ class Email(Events):
                     email[Email.EMAIL_BODY].append(email_data["body"]["plain"])
                 except:
                     email[Email.EMAIL_BODY].append("None")
+                email[Email.EMAIL_ORIGIN].append(origin)
 
             if granularity == 2:
                 #TDB
@@ -613,6 +660,7 @@ class Email(Events):
         events[Email.EMAIL_OWNER] = email[Email.EMAIL_OWNER]
         events[Email.EMAIL_SUBJECT] = email[Email.EMAIL_SUBJECT]
         events[Email.EMAIL_BODY] = email[Email.EMAIL_BODY]
+        events[Email.EMAIL_ORIGIN] = email[Email.EMAIL_ORIGIN]
 
         return events
 
