@@ -746,13 +746,16 @@ class Uuid(Enrich):
     """
 
 
-    def __init__(self, data, file_path='data/uuids.csv'):
+    def __init__(self, data, file_path='data/uuids.csv',
+                 drop_columns=[], drop_duplicates=[]):
         """ Main constructor of the class where the original dataframe
         is provided and the dataframe containing identities and their
         uuids is loaded from CSV file.
 
         :param data: original dataframe
         :param file_path: uuids file path (optional)
+        :param drop_columns: columns to remove from the csv
+        :param drop_duplicates: columns to use to remove duplicates
         :type data: pandas.DataFrame
         :type file_path: string
         """
@@ -762,8 +765,11 @@ class Uuid(Enrich):
         # Read csv to data frame, read '\N' (null in MySQL export format) also
         # as NaN (this is the way pandas deal with null values)
         self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N', sep='&&&')
-        self.uuids_df.drop('username', 1)
-        self.uuids_df.drop_duplicates(subset=['user', 'email'], inplace=True)
+        # Remove required columns to later merge
+        for column in drop_columns:
+            self.uuids_df.drop(column, 1)
+
+        self.uuids_df.drop_duplicates(subset=drop_duplicates, inplace=True)
 
     def enrich(self, columns):
         """ Merges the original dataframe with corresponding entity uuids based
