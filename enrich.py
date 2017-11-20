@@ -764,12 +764,15 @@ class Uuid(Enrich):
 
         # Read csv to data frame, read '\N' (null in MySQL export format) also
         # as NaN (this is the way pandas deal with null values)
-        self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N', sep='&&&')
+        self.uuids_df = pandas.read_csv(filepath_or_buffer=file_path, na_values='\\N', sep=',')
         # Remove required columns to later merge
         for column in drop_columns:
             self.uuids_df.drop(column, 1)
 
-        self.uuids_df.drop_duplicates(subset=drop_duplicates, inplace=True)
+        if len(drop_duplicates) > 0:
+            self.uuids_df.drop_duplicates(subset=drop_duplicates, inplace=True)
+        else:
+            self.uuids_df.drop_duplicates(inplace=True)
 
     def enrich(self, columns):
         """ Merges the original dataframe with corresponding entity uuids based
