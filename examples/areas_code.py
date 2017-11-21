@@ -30,13 +30,13 @@ import configparser
 
 import re
 
-import events
-
 import certifi
 
-from enrich import FileType
+from enrich.enrich import FileType, ToUTF8
 
-from filter import FilterRows
+from events.events import Git
+
+from df_utils.filter import FilterRows
 
 
 def ESConnection():
@@ -121,7 +121,7 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index):
         commits.append(item.to_dict())
 
         if cont % 100 == 0:
-            git_events = events.Git(commits)
+            git_events = Git(commits)
             events_df = git_events.eventize(2)
 
             # Filter information
