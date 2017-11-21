@@ -19,24 +19,26 @@
 #     Alberto Perez <alpgarcia@bitergia.com>
 #
 
-import sys
-
-import unittest
-
+import os
 import pandas
-
 import scipy
+import sys
+import unittest
 
 if not '..' in sys.path:
     sys.path.insert(0, '..')
 
-from enrich import PairProgramming, TimeDifference, Uuid
+from enrich.enrich import PairProgramming, TimeDifference, Uuid
 
-from format import Format
+from df_utils.format import Format
 
 class TestEnrich(unittest.TestCase):
     """ Unit tests for Enrich classes
     """
+
+    def setUp(self):
+        self.__tests_dir = os.path.dirname(os.path.realpath(__file__))
+        self.__enrich_dir = os.path.join(self.__tests_dir, "data/enrich/")
 
     def test_PairProgramming(self):
         """ Test several cases for the PairProgramming class
@@ -49,7 +51,8 @@ class TestEnrich(unittest.TestCase):
         self.assertTrue(pair.enrich("test1","test2").empty)
         # With a dataframe with some data, this returns a non-empty dataframe
 
-        csv_df = pandas.read_csv("data/enrich/pairprogramming.csv")
+        csv_df = pandas.read_csv(os.path.join(self.__enrich_dir,
+                                              "pairprogramming.csv"))
         pair = PairProgramming(csv_df)
         enriched_df = pair.enrich("test1","test2")
         self.assertFalse(enriched_df.empty)
@@ -78,7 +81,8 @@ class TestEnrich(unittest.TestCase):
         self.assertTrue(time.enrich("fake_column1", "fake_column2").empty)
 
         # A dataframe with some data, this returns a non-empty dataframe
-        csv_df = pandas.read_csv("data/enrich/timedifference.csv")
+        csv_df = pandas.read_csv(os.path.join(self.__enrich_dir,
+                                              "timedifference.csv"))
         time = TimeDifference(csv_df)
         format_ = Format()
         time.data = format_.format_dates(time.data, ["date_author", "date_committer"])
@@ -99,7 +103,8 @@ class TestEnrich(unittest.TestCase):
 
         # Empty LEFT dataframe
         empty_df = pandas.DataFrame()
-        uuid = Uuid(empty_df, file_path='data/enrich/uuids.csv')
+        uuid = Uuid(empty_df,
+                    file_path=os.path.join(self.__enrich_dir, "uuids.csv"))
 
         enriched_df = uuid.enrich(['name', 'email'])
 
@@ -107,8 +112,10 @@ class TestEnrich(unittest.TestCase):
         self.assertTrue(enriched_df.empty)
 
         # Load test data from CSV files
-        authors_df = pandas.read_csv("data/enrich/authors.csv")
-        uuid = Uuid(authors_df, file_path='data/enrich/uuids.csv')
+        authors_df = pandas.read_csv(os.path.join(self.__enrich_dir,
+                                                  "authors.csv"))
+        uuid = Uuid(authors_df,
+                    file_path=os.path.join(self.__enrich_dir, "uuids.csv"))
 
         enriched_df = uuid.enrich(['name', 'email'])
 

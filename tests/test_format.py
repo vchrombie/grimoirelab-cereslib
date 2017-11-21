@@ -18,18 +18,15 @@
 #     Daniel Izquierdo <dizquierdo@bitergia.com>
 #
 
-import sys
-
-import unittest
-
 import pandas
-
 import scipy
+import sys
+import unittest
 
 if not '..' in sys.path:
     sys.path.insert(0, '..')
 
-from format import Format
+from df_utils.format import Format
 
 class TestFormat(unittest.TestCase):
     """ Unit tests for Format class
