@@ -400,9 +400,10 @@ class Git(Events):
         events[Git.COMMIT_COMMITTER_DATE] = commit[Git.COMMIT_COMMITTER_DATE]
         events[Git.COMMIT_REPOSITORY] = commit[Git.COMMIT_REPOSITORY]
         events[Git.COMMIT_MESSAGE] = commit[Git.COMMIT_MESSAGE]
-        events[Git.COMMIT_NUM_FILES] = commit[Git.COMMIT_NUM_FILES]
-        events[Git.COMMIT_ADDED_LINES] = commit[Git.COMMIT_ADDED_LINES]
-        events[Git.COMMIT_REMOVED_LINES] = commit [Git.COMMIT_REMOVED_LINES]
+        if granularity == 1:
+            events[Git.COMMIT_NUM_FILES] = commit[Git.COMMIT_NUM_FILES]
+            events[Git.COMMIT_ADDED_LINES] = commit[Git.COMMIT_ADDED_LINES]
+            events[Git.COMMIT_REMOVED_LINES] = commit [Git.COMMIT_REMOVED_LINES]
         if granularity == 2:
             events[Git.FILE_EVENT] = commit[Git.FILE_EVENT]
             events[Git.FILE_PATH] = commit[Git.FILE_PATH]
