@@ -114,17 +114,17 @@ class TestEnrich(unittest.TestCase):
         file_1['file_name'] = 'file.txt'
         file_1['file_ext'] = 'txt'
         file_1['file_dir_name'] = ''
-        file_1['path_list'] = ['file.txt']
+        file_1['file_path_list'] = ['file.txt']
         file_2['filepath'] = '/foo/bar'
         file_2['file_name'] = 'bar'
         file_2['file_ext'] = ''
         file_2['file_dir_name'] = '/foo/'
-        file_2['path_list'] = ['foo', 'bar']
+        file_2['file_path_list'] = ['foo', 'bar']
         file_3['filepath'] = '/foo/bar/file.txt'
         file_3['file_name'] = 'file.txt'
         file_3['file_ext'] = 'txt'
         file_3['file_dir_name'] = '/foo/bar/'
-        file_3['path_list'] = ['foo', 'bar', 'file.txt']
+        file_3['file_path_list'] = ['foo', 'bar', 'file.txt']
         test_df['filepath'] = [file_1['filepath'], file_2['filepath'],
                                file_3['filepath']]
         filepath = FilePath(test_df)
@@ -141,9 +141,9 @@ class TestEnrich(unittest.TestCase):
         self.assertEqual(enriched_df.iloc[[0]]['file_dir_name'].item(), file_1['file_dir_name'])
         self.assertEqual(enriched_df.iloc[[1]]['file_dir_name'].item(), file_2['file_dir_name'])
         self.assertEqual(enriched_df.iloc[[2]]['file_dir_name'].item(), file_3['file_dir_name'])
-        self.assertEqual(enriched_df.iloc[[0]]['path_list'].item(), file_1['path_list'])
-        self.assertEqual(enriched_df.iloc[[1]]['path_list'].item(), file_2['path_list'])
-        self.assertEqual(enriched_df.iloc[[2]]['path_list'].item(), file_3['path_list'])
+        self.assertEqual(enriched_df.iloc[[0]]['file_path_list'].item(), file_1['file_path_list'])
+        self.assertEqual(enriched_df.iloc[[1]]['file_path_list'].item(), file_2['file_path_list'])
+        self.assertEqual(enriched_df.iloc[[2]]['file_path_list'].item(), file_3['file_path_list'])
 
 
     def test_Uuid(self):
