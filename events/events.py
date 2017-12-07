@@ -42,6 +42,7 @@ class Events(object):
     GRIMOIRE_CREATION_DATE = "grimoire_creation_date"
     PROJECT = "project"
     PROJECT_1 = "project_1"
+    PERCEVAL_UUID = "perceval_uuid"
 
     SH_AUTHOR_ID = "author_id"
     SH_AUTHOR_ORG_NAME = "author_org_name"
@@ -84,7 +85,10 @@ class Events(object):
 
         df_columns[Events.GRIMOIRE_CREATION_DATE].append(creation_date)
 
-        #TODO add other common fields as 'perceval version', 'tag', 'origin'...
+        # Perceval fields
+        df_columns[Events.PERCEVAL_UUID].append(item['uuid'])
+
+        # TODO add other common fields as 'perceval version', 'tag', 'origin'...
 
     def _add_general_info(self, df_columns, item):
 
@@ -144,6 +148,27 @@ class Events(object):
         df_columns[Events.SH_AUTHOR_USER_NAME].append(author_username)
         df_columns[Events.SH_AUTHOR_BOT].append(author_bot)
 
+    def _init_common_fields(self, df_columns):
+        # Metadata fields
+        df_columns[Git.META_TIMESTAMP] = []
+        df_columns[Git.META_UPDATED_ON] = []
+        df_columns[Git.META_ENRICHED_ON] = []
+
+        # Common fields
+        df_columns[Events.GRIMOIRE_CREATION_DATE] = []
+        df_columns[Events.PROJECT] = []
+        df_columns[Events.PROJECT_1] = []
+        df_columns[Events.PERCEVAL_UUID] = []
+
+        # SortigHat information
+        df_columns[Git.SH_AUTHOR_ID] = []
+        df_columns[Git.SH_AUTHOR_ORG_NAME] = []
+        df_columns[Git.SH_AUTHOR_NAME] = []
+        df_columns[Git.SH_AUTHOR_UUID] = []
+        df_columns[Git.SH_AUTHOR_DOMAIN] = []
+        df_columns[Git.SH_AUTHOR_USER_NAME] = []
+        df_columns[Git.SH_AUTHOR_BOT] = []
+
     def _add_common_fields(self, df_columns, item):
         self._add_metadata(df_columns, item)
         self._add_sh_info(df_columns, item)
@@ -159,6 +184,8 @@ class Events(object):
         events[Events.PROJECT] = df_columns[Events.PROJECT]
         events[Events.PROJECT_1] = df_columns[Events.PROJECT_1]
 
+        events[Events.PERCEVAL_UUID] = df_columns[Events.PERCEVAL_UUID]
+
         events[Events.SH_AUTHOR_ID] = df_columns[Events.SH_AUTHOR_ID]
         events[Events.SH_AUTHOR_ORG_NAME] = df_columns[Events.SH_AUTHOR_ORG_NAME]
         events[Events.SH_AUTHOR_NAME] = df_columns[Events.SH_AUTHOR_NAME]
@@ -166,7 +193,6 @@ class Events(object):
         events[Events.SH_AUTHOR_DOMAIN] = df_columns[Events.SH_AUTHOR_DOMAIN]
         events[Events.SH_AUTHOR_USER_NAME] = df_columns[Events.SH_AUTHOR_USER_NAME]
         events[Events.SH_AUTHOR_BOT] = df_columns[Events.SH_AUTHOR_BOT]
-
 
 
 class Bugzilla(Events):
@@ -202,7 +228,6 @@ class Bugzilla(Events):
 
         self.items = items
 
-
     def eventize(self, granularity):
         """ This splits the JSON information found at self.events into the
         several events. For this there are three different levels of time
@@ -219,7 +244,6 @@ class Bugzilla(Events):
         :returns: Pandas dataframe with splitted events.
         :rtype: pandas.DataFrame
         """
-
 
         issue = {}
         issue[Bugzilla.ISSUE_ID] = []
@@ -242,7 +266,7 @@ class Bugzilla(Events):
                 if 'activity' in bug_data.keys():
                     activity = bug_data["activity"]
                     for change in activity:
-                        #if change["What"] == "Status":
+                        # if change["What"] == "Status":
                         # Filling a new event
                         issue[Bugzilla.ISSUE_ID].append(bug_data['bug_id'][0]['__text__'])
                         issue[Bugzilla.ISSUE_EVENT].append("ISSUE_" + change["Added"])
@@ -250,13 +274,13 @@ class Bugzilla(Events):
                         issue[Bugzilla.ISSUE_OWNER].append(change["Who"])
 
             if granularity == 2:
-                #TBD Let's produce an index with all of the changes.
+                # TBD Let's produce an index with all of the changes.
                 #    Let's have in mind the point about having the changes of initiating
                 #    the ticket.
                 pass
 
             if granularity == 3:
-                #TDB
+                # TDB
                 pass
 
         # Done in this way to have an order (and not a direct cast)
@@ -293,7 +317,6 @@ class BugzillaRest(Events):
 
         self.items = items
 
-
     def eventize(self, granularity):
         """ This splits the JSON information found at self.events into the
         several events. For this there are three different levels of time
@@ -310,7 +333,6 @@ class BugzillaRest(Events):
         :returns: Pandas dataframe with splitted events.
         :rtype: pandas.DataFrame
         """
-
 
         issue = {}
         issue[BugzillaRest.ISSUE_ID] = []
@@ -350,13 +372,13 @@ class BugzillaRest(Events):
                             issue[BugzillaRest.ISSUE_OWNER].append(who)
 
             if granularity == 2:
-                #TBD Let's produce an index with all of the changes.
+                # TBD Let's produce an index with all of the changes.
                 #    Let's have in mind the point about having the changes of initiating
                 #    the ticket.
                 pass
 
             if granularity == 3:
-                #TDB
+                # TDB
                 pass
 
         # Done in this way to have an order (and not a direct cast)
@@ -400,6 +422,7 @@ class Git(Events):
     FILE_PATH = "filepath"
     FILE_ADDED_LINES = "addedlines"
     FILE_REMOVED_LINES = "removedlines"
+    FILE_FILES = "files"
 
     def __init__(self, items, git_enrich):
         """ Main constructor of the class
@@ -411,7 +434,6 @@ class Git(Events):
         """
 
         super().__init__(items=items, enrich=git_enrich)
-
 
     def __add_commit_info(self, df_columns, item):
 
@@ -434,7 +456,6 @@ class Git(Events):
         else:
             df_columns[Git.COMMIT_MESSAGE].append('')
 
-
     def eventize(self, granularity):
         """ This splits the JSON information found at self.events into the
         several events. For this there are three different levels of time
@@ -452,24 +473,8 @@ class Git(Events):
         """
 
         df_columns = {}
-        # Metadata fields
-        df_columns[Git.META_TIMESTAMP] = []
-        df_columns[Git.META_UPDATED_ON] = []
-        df_columns[Git.META_ENRICHED_ON] = []
-
-        # Common fields
-        df_columns[Events.GRIMOIRE_CREATION_DATE] = []
-        df_columns[Events.PROJECT] = []
-        df_columns[Events.PROJECT_1] = []
-
-        # SortigHat information
-        df_columns[Git.SH_AUTHOR_ID] = []
-        df_columns[Git.SH_AUTHOR_ORG_NAME] = []
-        df_columns[Git.SH_AUTHOR_NAME] = []
-        df_columns[Git.SH_AUTHOR_UUID] = []
-        df_columns[Git.SH_AUTHOR_DOMAIN] = []
-        df_columns[Git.SH_AUTHOR_USER_NAME] = []
-        df_columns[Git.SH_AUTHOR_BOT] = []
+        # Init common columns
+        self._init_common_fields(df_columns)
 
         # First level granularity
         df_columns[Git.COMMIT_ID] = []
@@ -486,6 +491,7 @@ class Git(Events):
         df_columns[Git.COMMIT_HASH] = []
 
         # Second level of granularity
+        df_columns[Git.FILE_FILES] = []
         df_columns[Git.FILE_EVENT] = []
         df_columns[Git.FILE_PATH] = []
         df_columns[Git.FILE_ADDED_LINES] = []
@@ -511,14 +517,21 @@ class Git(Events):
                 df_columns[Git.COMMIT_ADDED_LINES] = added_lines
                 df_columns[Git.COMMIT_REMOVED_LINES] = removed_lines
 
-            #TODO: this will fail if no files are found in a commit (eg: merge)
+            # TODO: this will fail if no files are found in a commit (eg: merge)
             if granularity == 2:
                 # Add extra info about files actions, if there were any
                 if "files" in commit_data.keys():
                     files = commit_data["files"]
+                    nfiles = 0
+                    for f in files:
+                        if "action" in f.keys():
+                            nfiles += 1
+
                     for f in files:
                         self._add_common_fields(df_columns, item)
                         self.__add_commit_info(df_columns, item)
+
+                        df_columns[Git.FILE_FILES].append(nfiles)
 
                         if "action" in f.keys():
                             df_columns[Git.FILE_EVENT].append(Git.EVENT_FILE + f["action"])
@@ -550,9 +563,8 @@ class Git(Events):
                     print("Merge found, doing nothing...")
 
             if granularity == 3:
-                #TDB
+                # TDB
                 pass
-
 
         # Done in this way to have an order (and not a direct cast)
         self._add_common_events(events, df_columns)
@@ -571,13 +583,13 @@ class Git(Events):
             events[Git.COMMIT_ADDED_LINES] = df_columns[Git.COMMIT_ADDED_LINES]
             events[Git.COMMIT_REMOVED_LINES] = df_columns[Git.COMMIT_REMOVED_LINES]
         if granularity == 2:
+            events[Git.FILE_FILES] = df_columns[Git.FILE_FILES]
             events[Git.FILE_EVENT] = df_columns[Git.FILE_EVENT]
             events[Git.FILE_PATH] = df_columns[Git.FILE_PATH]
             events[Git.FILE_ADDED_LINES] = df_columns[Git.FILE_ADDED_LINES]
             events[Git.FILE_REMOVED_LINES] = df_columns[Git.FILE_REMOVED_LINES]
 
         return events
-
 
 
 class Gerrit(Events):
@@ -660,29 +672,31 @@ class Gerrit(Events):
                 # Adding the closing status updates (if there was any)
                 if changeset_data["status"] == 'ABANDONED' or \
                    changeset_data["status"] == 'MERGED':
-                       closing_date = dt.fromtimestamp(int(changeset_data["lastUpdated"]))
-                       changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
-                       changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + changeset_data["status"])
-                       changeset[Gerrit.CHANGESET_DATE].append(closing_date)
-                       changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
-                       value = email = "notknown"
-                       if "name" in changeset_data["owner"].keys():
-                           value = changeset_data["owner"]["name"]
-                       if "username" in changeset_data["owner"].keys():
-                           value = changeset_data["owner"]["username"]
-                       if "email" in changeset_data["owner"].keys():
-                           value = changeset_data["owner"]["email"]
-                           email = changeset_data["owner"]["email"]
-                       changeset[Gerrit.CHANGESET_OWNER].append(value)
-                       changeset[Gerrit.CHANGESET_EMAIL].append(email)
-                       changeset[Gerrit.CHANGESET_VALUE].append(-10)
+                    closing_date = dt.fromtimestamp(int(changeset_data["lastUpdated"]))
+                    changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
+                    changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ +
+                                                             changeset_data["status"])
+                    changeset[Gerrit.CHANGESET_DATE].append(closing_date)
+                    changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
+                    value = email = "notknown"
+                    if "name" in changeset_data["owner"].keys():
+                        value = changeset_data["owner"]["name"]
+                    if "username" in changeset_data["owner"].keys():
+                        value = changeset_data["owner"]["username"]
+                    if "email" in changeset_data["owner"].keys():
+                        value = changeset_data["owner"]["email"]
+                        email = changeset_data["owner"]["email"]
+                    changeset[Gerrit.CHANGESET_OWNER].append(value)
+                    changeset[Gerrit.CHANGESET_EMAIL].append(email)
+                    changeset[Gerrit.CHANGESET_VALUE].append(-10)
 
             if granularity >= 2:
                 # Adding extra info about the patchsets
                 for patchset in changeset_data["patchSets"]:
                     changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
                     changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_SENT")
-                    changeset[Gerrit.CHANGESET_DATE].append(dt.fromtimestamp(int(patchset["createdOn"])))
+                    changeset[Gerrit.CHANGESET_DATE].append(
+                        dt.fromtimestamp(int(patchset["createdOn"])))
                     changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                     try:
                         email = "patchset_noname"
@@ -693,19 +707,22 @@ class Gerrit(Events):
                         if "email" in patchset["author"].keys():
                             value = patchset["author"]["email"]
                             email = patchset["author"]["email"]
-                    except:
+                    except KeyError:
                         value = "patchset_noname"
                     changeset[Gerrit.CHANGESET_OWNER].append(value)
                     changeset[Gerrit.CHANGESET_EMAIL].append(email)
                     changeset[Gerrit.CHANGESET_VALUE].append(-10)
-                    #print (patchset)
+                    # print (patchset)
                     if "approvals" in patchset.keys():
                         for approval in patchset["approvals"]:
                             if approval["type"] != "Code-Review":
                                 continue
                             changeset[Gerrit.CHANGESET_ID].append(changeset_data["number"])
-                            changeset[Gerrit.CHANGESET_EVENT].append(Gerrit.EVENT_ + "PATCHSET_APPROVAL_" + approval["type"])
-                            changeset[Gerrit.CHANGESET_DATE].append(dt.fromtimestamp(int(approval["grantedOn"])))
+                            changeset[Gerrit.CHANGESET_EVENT].append(
+                                Gerrit.EVENT_ +
+                                "PATCHSET_APPROVAL_" + approval["type"])
+                            changeset[Gerrit.CHANGESET_DATE].append(
+                                dt.fromtimestamp(int(approval["grantedOn"])))
                             changeset[Gerrit.CHANGESET_REPO].append(changeset_data["project"])
                             email = "approval_noname"
                             if "name" in approval["by"].keys():
@@ -720,7 +737,7 @@ class Gerrit(Events):
                             changeset[Gerrit.CHANGESET_VALUE].append(int(approval["value"]))
 
             if granularity >= 3:
-                #TDB
+                # TDB
                 pass
 
         # Done in this way to have an order (and not a direct cast)
@@ -733,7 +750,6 @@ class Gerrit(Events):
         events[Gerrit.CHANGESET_REPO] = changeset[Gerrit.CHANGESET_REPO]
 
         return events
-
 
 
 class Email(Events):
@@ -780,7 +796,6 @@ class Email(Events):
         :rtype: pandas.DataFrame
         """
 
-
         email = {}
         # First level granularity
         email[Email.EMAIL_ID] = []
@@ -802,22 +817,22 @@ class Email(Events):
                 email[Email.EMAIL_EVENT].append(Email.EVENT_OPEN)
                 try:
                     email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"], ignoretz=True))
-                except:
+                except KeyError:
                     email[Email.EMAIL_DATE].append(parser.parse("1970-01-01"))
                 email[Email.EMAIL_OWNER].append(email_data["From"])
                 email[Email.EMAIL_SUBJECT].append(email_data["Subject"])
                 try:
                     email[Email.EMAIL_BODY].append(email_data["body"]["plain"])
-                except:
+                except KeyError:
                     email[Email.EMAIL_BODY].append("None")
                 email[Email.EMAIL_ORIGIN].append(origin)
 
             if granularity == 2:
-                #TDB
+                # TDB
                 pass
 
             if granularity == 3:
-                #TDB
+                # TDB
                 pass
 
         # Done in this way to have an order (and not a direct cast)
