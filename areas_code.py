@@ -27,6 +27,7 @@ import logging
 import sys
 
 from elasticsearch import Elasticsearch, helpers
+from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Search
 
 from grimoire_elk.elk.git import GitEnrich
@@ -320,21 +321,26 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, git_enrich,
         search = search[0:0]
         search = search.aggs.metric('max_date', 'max', field='metadata__timestamp')
 
-        response = search.execute()
+        try:
+            response = search.execute()
 
-        if response.to_dict()['aggregations']['max_date']['value'] is None:
-            msg = "No data for 'metadata__timestamp' field found in "
-            msg += es_write_index + " index"
-            logging.warning(msg)
+            if response.to_dict()['aggregations']['max_date']['value'] is None:
+                msg = "No data for 'metadata__timestamp' field found in "
+                msg += es_write_index + " index"
+                logging.warning(msg)
+                init_write_index(es_write, es_write_index)
+
+            else:
+                # Incremental case: retrieve items from last item in ES write index
+                max_date = response.to_dict()['aggregations']['max_date']['value_as_string']
+                max_date = date_parser.parse(max_date).isoformat()
+
+                logging.info("Starting retrieval from: " + max_date)
+                query = {"range": {"metadata__timestamp": {"gte": max_date}}}
+
+        except NotFoundError:
+            logging.warning("Index not found: " + es_write_index)
             init_write_index(es_write, es_write_index)
-
-        else:
-            # Incremental case: retrieve items from last item in ES write index
-            max_date = response.to_dict()['aggregations']['max_date']['value_as_string']
-            max_date = date_parser.parse(max_date).isoformat()
-
-            logging.info("Starting retrieval from: " + max_date)
-            query = {"range": {"metadata__timestamp": {"gte": max_date}}}
 
     else:
         init_write_index(es_write, es_write_index)
