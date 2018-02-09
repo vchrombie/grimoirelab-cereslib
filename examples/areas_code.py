@@ -32,9 +32,9 @@ from elasticsearch_dsl import Search
 
 from grimoire_elk.elk.git import GitEnrich
 
-from df_utils.filter import FilterRows
-from enrich.enrich import FileType, FilePath, ToUTF8
-from events.events import Git, Events
+from ceres.df_utils.filter import FilterRows
+from ceres.enrich.enrich import FileType, FilePath, ToUTF8
+from ceres.events.events import Git, Events
 
 import certifi
 

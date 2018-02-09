@@ -30,13 +30,13 @@ import configparser
 
 import re
 
-import events
+import ceres.events
 
 import certifi
 
-from enrich import Gender, FileType, EmailFlag, SplitLists, MaxMin, SplitEmail, ToUTF8, Uuid
+from ceres.enrich import Gender, FileType, EmailFlag, SplitLists, MaxMin, SplitEmail, ToUTF8, Uuid
 
-from filter import FilterRows
+from ceres.filter import FilterRows
 
 
 MAPPING_GERRIT = {
