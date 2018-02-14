@@ -1,4 +1,6 @@
-# Copyright (C) 2015-2016 Bitergia
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2015-2018 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,20 +13,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # Authors:
 #     Daniel Izquierdo <dizquierdo@bitergia.com>
 #
 
-import sys
-
-import unittest
-
-
-if __name__ == '__main__':
-    test_suite = unittest.TestLoader().discover('.', pattern='test*.py')
-    result = unittest.TextTestRunner(buffer=True).run(test_suite)
-    sys.exit(not result.wasSuccessful())
-
+from ._version import __version__
