@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2017 Bitergia
+# Copyright (C) 2015-2018 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,9 +74,9 @@ setup(name="ceres",
           'ceres.events'
       ],
       install_requires=[
-          'grimoire-elk>=0.30.13',
-          'elasticsearch-dsl>=5.3.0',
-          'pandas>=0.19.2'
+          'grimoire-elk>=0.30.23',
+          'pandas>=0.19.2',
+          'scipy'
       ],
       scripts=[],
       zip_safe=False)
