@@ -1,4 +1,7 @@
-# Copyright (C) 2015-2016 Bitergia
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2015-2018 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,4 +30,3 @@ if __name__ == '__main__':
     test_suite = unittest.TestLoader().discover('.', pattern='test*.py')
     result = unittest.TextTestRunner(buffer=True).run(test_suite)
     sys.exit(not result.wasSuccessful())
-

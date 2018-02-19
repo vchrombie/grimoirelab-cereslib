@@ -26,7 +26,7 @@ import unittest
 if not '..' in sys.path:
     sys.path.insert(0, '..')
 
-from ceres.df_utils.format import Format
+from cereslib.dfutils.format import Format
 
 class TestFormat(unittest.TestCase):
     """ Unit tests for Format class

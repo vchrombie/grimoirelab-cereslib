@@ -27,9 +27,9 @@ import unittest
 if '..' not in sys.path:
     sys.path.insert(0, '..')
 
-from ceres.enrich.enrich import PairProgramming, TimeDifference, Uuid, FilePath
+from cereslib.enrich.enrich import PairProgramming, TimeDifference, Uuid, FilePath
 
-from ceres.df_utils.format import Format
+from cereslib.dfutils.format import Format
 
 
 class TestEnrich(unittest.TestCase):
