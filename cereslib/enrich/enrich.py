@@ -863,3 +863,64 @@ class Uuid(Enrich):
         self.data = self.data.fillna("notavailable")
 
         return self.data
+
+
+class Onion(Enrich):
+    """ This class adds a new column with the role of the author with respect
+    to the amount of work in a given column. The onion model is based on the
+    analysis of the community where the 80% of the work is done by membe
+    """
+
+    def __init__(self, data):
+        """ Main constructor of the class where the original dataframe
+        is provided and the dataframe containing identities and their
+        uuids is loaded from CSV file.
+
+        :param data: original dataframe
+        :param file_path: uuids file path (optional)
+        :param drop_columns: columns to remove from the csv
+        :param drop_duplicates: columns to use to remove duplicates
+        :type data: pandas.DataFrame
+        :type file_path: string
+        """
+
+        self.data = data
+
+    def enrich(self, member_column, events_column):
+        """ Calculates the onion model for the given set of columns.
+        This expects two columns as input (typically the author and
+        the amount of events) and returns a third column with the
+        role (core, regular, casual) of such community member.
+
+        :param columns: columns to match for calculating the onion model
+        :type column: string array
+
+        :return: original dataframe with three new columns and ordered by role
+                 importance:
+         * onion_role: "core", "regular", or "casual"
+         * percent_cum_net_sum: percentage of the activity up to such developer
+         * cum_net_sum: accumulated activity up to such developer
+        :rtype: pandas.DataFrame
+        """
+
+        if member_column not in self.data.columns or \
+           events_column not in self.data.columns:
+            return self.data
+
+        # Order the data... just in case
+        self.data.sort_values(by=events_column, ascending=False, inplace=True)
+        # Reset the index to properly work with other methods
+        self.data.reset_index(inplace=True)
+        # Remove resultant new 'index' column
+        self.data.drop(["index"], axis=1, inplace=True)
+
+        # Calculate onion limits and accumulative sum and percentage
+        self.data["cum_net_sum"] = self.data[events_column].cumsum()
+        self.data["percent_cum_net_sum"] = (self.data.cum_net_sum/self.data[events_column].sum())*100
+
+        # Assign roles based on the percentage
+        self.data["onion_role"] = pandas.cut(self.data["percent_cum_net_sum"],
+                                               [0.0, 80.0, 95.0, 100.0],
+                                               labels=["core", "regular", "casual"])
+
+        return self.data

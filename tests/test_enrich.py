@@ -28,6 +28,7 @@ if '..' not in sys.path:
     sys.path.insert(0, '..')
 
 from cereslib.enrich.enrich import PairProgramming, TimeDifference, Uuid, FilePath
+from cereslib.enrich.enrich import Onion
 
 from cereslib.dfutils.format import Format
 
@@ -218,6 +219,22 @@ class TestEnrich(unittest.TestCase):
         self.assertEqual(john_df.iloc[[0]]['uuid'].item(), john_uuid)
         self.assertEqual(john_df.iloc[[1]]['uuid'].item(), john_uuid)
         self.assertEqual(john_df.iloc[[2]]['uuid'].item(), john_uuid)
+
+    def test_Onion(self):
+        """Test several cases for the Onion analysis
+        """
+
+        members_df = pandas.read_csv(os.path.join(self.__enrich_dir,
+                                                  "onion.csv"))
+        onion = Onion(members_df)
+        enriched_df = onion.enrich("author", "events")
+
+        self.assertFalse(enriched_df.empty)
+
+        self.assertTrue(len(enriched_df), 7)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="core"]), 1)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="regular"]), 3)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="casual"]), 4)
 
 
 if __name__ == '__main__':
