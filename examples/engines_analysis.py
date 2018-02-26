@@ -29,11 +29,11 @@ import re
 
 from perceval.backends.core.git import Git
 
-import ceres.events
+import cereslib.events
 
-from ceres.enrich import Gender, FileType, EmailFlag, SplitLists, MaxMin, SplitEmail, ToUTF8, MessageLogFlag, SplitEmailDomain
+from cereslib.enrich import Gender, FileType, EmailFlag, SplitLists, MaxMin, SplitEmail, ToUTF8, MessageLogFlag, SplitEmailDomain
 
-from ceres.filter import FilterRows
+from cereslib.filter import FilterRows
 
 MAPPING_GIT = {
 "mappings" : {

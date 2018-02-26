@@ -31,7 +31,7 @@ from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme_md = os.path.join(here, 'README.md')
-version_py = os.path.join(here, 'ceres', '_version.py')
+version_py = os.path.join(here, 'cereslib', '_version.py')
 
 # Pypi wants the description to be in reStrcuturedText, but
 # we have it in Markdown. So, let's convert formats.
@@ -51,10 +51,10 @@ with codecs.open(version_py, 'r', encoding='utf-8') as fd:
                         fd.read(), re.MULTILINE).group(1)
 
 
-setup(name="ceres",
+setup(name="cereslib",
       description="GrimoireLab: Unify, eventize and enrich information from Perceval",
       long_description=long_description,
-      url="https://github.com/chaoss/grimoirelab-ceres",
+      url="https://github.com/chaoss/grimoirelab-cereslib",
       version=version,
       author="Bitergia",
       author_email="dizquierdo@bitergia.com",
@@ -68,10 +68,10 @@ setup(name="ceres",
       ],
       keywords="software development analytics",
       packages=[
-          'ceres',
-          'ceres.df_utils',
-          'ceres.enrich',
-          'ceres.events'
+          'cereslib',
+          'cereslib.dfutils',
+          'cereslib.enrich',
+          'cereslib.events'
       ],
       install_requires=[
           'grimoire-elk>=0.30.23',
