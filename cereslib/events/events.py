@@ -24,7 +24,7 @@ from dateutil import parser
 
 import pandas
 
-from grimoire_elk.elk.sortinghat import SortingHat
+from grimoire_elk.elk.sortinghat_gelk import SortingHat
 
 
 class Events(object):
