@@ -150,9 +150,9 @@ class Events(object):
 
     def _init_common_fields(self, df_columns):
         # Metadata fields
-        df_columns[Git.META_TIMESTAMP] = []
-        df_columns[Git.META_UPDATED_ON] = []
-        df_columns[Git.META_ENRICHED_ON] = []
+        df_columns[Events.META_TIMESTAMP] = []
+        df_columns[Events.META_UPDATED_ON] = []
+        df_columns[Events.META_ENRICHED_ON] = []
 
         # Common fields
         df_columns[Events.GRIMOIRE_CREATION_DATE] = []
@@ -161,13 +161,13 @@ class Events(object):
         df_columns[Events.PERCEVAL_UUID] = []
 
         # SortigHat information
-        df_columns[Git.SH_AUTHOR_ID] = []
-        df_columns[Git.SH_AUTHOR_ORG_NAME] = []
-        df_columns[Git.SH_AUTHOR_NAME] = []
-        df_columns[Git.SH_AUTHOR_UUID] = []
-        df_columns[Git.SH_AUTHOR_DOMAIN] = []
-        df_columns[Git.SH_AUTHOR_USER_NAME] = []
-        df_columns[Git.SH_AUTHOR_BOT] = []
+        df_columns[Events.SH_AUTHOR_ID] = []
+        df_columns[Events.SH_AUTHOR_ORG_NAME] = []
+        df_columns[Events.SH_AUTHOR_NAME] = []
+        df_columns[Events.SH_AUTHOR_UUID] = []
+        df_columns[Events.SH_AUTHOR_DOMAIN] = []
+        df_columns[Events.SH_AUTHOR_USER_NAME] = []
+        df_columns[Events.SH_AUTHOR_BOT] = []
 
     def _add_common_fields(self, df_columns, item):
         self._add_metadata(df_columns, item)
@@ -418,6 +418,8 @@ class Git(Events):
 
     COMMIT_HASH = "hash"
 
+    AUTHOR_DOMAIN = "git_author_domain"
+
     FILE_EVENT = "fileaction"
     FILE_PATH = "filepath"
     FILE_ADDED_LINES = "addedlines"
@@ -456,6 +458,9 @@ class Git(Events):
         else:
             df_columns[Git.COMMIT_MESSAGE].append('')
 
+        author_domain = self.enrich.get_identity_domain(self.enrich.get_sh_identity(item, 'Author'))
+        df_columns[Git.AUTHOR_DOMAIN].append(author_domain)
+
     def eventize(self, granularity):
         """ This splits the JSON information found at self.events into the
         several events. For this there are three different levels of time
@@ -489,6 +494,7 @@ class Git(Events):
         df_columns[Git.COMMIT_ADDED_LINES] = []
         df_columns[Git.COMMIT_REMOVED_LINES] = []
         df_columns[Git.COMMIT_HASH] = []
+        df_columns[Git.AUTHOR_DOMAIN] = []
 
         # Second level of granularity
         df_columns[Git.FILE_FILES] = []
@@ -578,6 +584,8 @@ class Git(Events):
         events[Git.COMMIT_REPOSITORY] = df_columns[Git.COMMIT_REPOSITORY]
         events[Git.COMMIT_MESSAGE] = df_columns[Git.COMMIT_MESSAGE]
         events[Git.COMMIT_HASH] = df_columns[Git.COMMIT_HASH]
+        events[Git.AUTHOR_DOMAIN] = df_columns[Git.AUTHOR_DOMAIN]
+
         if granularity == 1:
             events[Git.COMMIT_NUM_FILES] = df_columns[Git.COMMIT_NUM_FILES]
             events[Git.COMMIT_ADDED_LINES] = df_columns[Git.COMMIT_ADDED_LINES]
