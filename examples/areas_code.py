@@ -30,7 +30,7 @@ from elasticsearch import Elasticsearch, helpers
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Search
 
-from grimoire_elk.elk.git import GitEnrich
+from grimoire_elk.enriched.git import GitEnrich
 
 from cereslib.dfutils.filter import FilterRows
 from cereslib.enrich.enrich import FileType, FilePath, ToUTF8
