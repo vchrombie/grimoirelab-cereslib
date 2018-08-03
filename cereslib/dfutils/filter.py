@@ -20,8 +20,6 @@
 #
 
 
-import pandas
-
 class Filter(object):
     """ Class that filters information for a given dataset.
 
@@ -36,6 +34,7 @@ class Filter(object):
     certain commits that follow some pattern such as merges
     or automatically generated ones.
     """
+
 
 class FilterRows(Filter):
     """ Class used to filter those files that are part of a merge
@@ -65,10 +64,12 @@ class FilterRows(Filter):
 
         for column in columns:
             if column not in self.data.columns:
-                return self.data
+                raise ValueError("Column %s not in DataFrame columns: %s" % (column, list(self.data)))
 
         for column in columns:
-            self.data = self.data[self.data[column] != value]
+            # Filtering on empty data series doesn't make sense at all and also would raise an error
+            column_len = len(self.data[column])
+            if column_len > 0 and column_len != self.data[column].isnull().sum():
+                self.data = self.data[self.data[column] != value]
 
         return self.data
-
