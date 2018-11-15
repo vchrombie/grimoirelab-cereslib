@@ -1,6 +1,7 @@
 certifi==2017.11.5
 elasticsearch==5.5.1
 elasticsearch-dsl==5.3.0
+grimoirelab-toolkit==0.1.8
 grimoire-elk==0.30.13
 numpy==1.12.1
 pandas==0.19.2
