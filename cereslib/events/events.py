@@ -20,10 +20,10 @@
 #
 
 from datetime import datetime as dt
-from dateutil import parser
 
 import pandas
 
+from grimoirelab_toolkit.datetime import str_to_datetime
 from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 
 
@@ -81,7 +81,7 @@ class Events(object):
         if Events.GRIMOIRE_CREATION_DATE in item:
             creation_date = item[Events.GRIMOIRE_CREATION_DATE]
         else:
-            creation_date = parser.parse(item['data']['AuthorDate'])
+            creation_date = str_to_datetime(item['data']['AuthorDate'])
 
         df_columns[Events.GRIMOIRE_CREATION_DATE].append(creation_date)
 
@@ -259,7 +259,7 @@ class Bugzilla(Events):
                 # Open Date: filling a new event
                 issue[Bugzilla.ISSUE_ID].append(bug_data['bug_id'][0]['__text__'])
                 issue[Bugzilla.ISSUE_EVENT].append(Bugzilla.EVENT_OPEN)
-                issue[Bugzilla.ISSUE_DATE].append(parser.parse(bug_data['creation_ts'][0]['__text__']))
+                issue[Bugzilla.ISSUE_DATE].append(str_to_datetime(bug_data['creation_ts'][0]['__text__']))
                 issue[Bugzilla.ISSUE_OWNER].append(bug_data['reporter'][0]["__text__"])
 
                 # Adding the rest of the status updates (if there were any)
@@ -270,7 +270,7 @@ class Bugzilla(Events):
                         # Filling a new event
                         issue[Bugzilla.ISSUE_ID].append(bug_data['bug_id'][0]['__text__'])
                         issue[Bugzilla.ISSUE_EVENT].append("ISSUE_" + change["Added"])
-                        issue[Bugzilla.ISSUE_DATE].append(parser.parse(change["When"]))
+                        issue[Bugzilla.ISSUE_DATE].append(str_to_datetime(change["When"]))
                         issue[Bugzilla.ISSUE_OWNER].append(change["Who"])
 
             if granularity == 2:
@@ -350,7 +350,7 @@ class BugzillaRest(Events):
                 # Open Date: filling a new event
                 issue[BugzillaRest.ISSUE_ID].append(bug_data['id'])
                 issue[BugzillaRest.ISSUE_EVENT].append(BugzillaRest.EVENT_OPEN)
-                issue[BugzillaRest.ISSUE_DATE].append(parser.parse(bug_data['creation_time']))
+                issue[BugzillaRest.ISSUE_DATE].append(str_to_datetime(bug_data['creation_time']))
                 issue[BugzillaRest.ISSUE_OWNER].append(bug_data['creator_detail']["real_name"])
                 issue[BugzillaRest.ISSUE_ADDED].append("-")
                 issue[BugzillaRest.ISSUE_REMOVED].append("-")
@@ -361,7 +361,7 @@ class BugzillaRest(Events):
                     for step in history:
                         # Filling a new event
                         who = step["who"]
-                        when = parser.parse(step["when"])
+                        when = str_to_datetime(step["when"])
                         changes = step["changes"]
                         for change in changes:
                             issue[BugzillaRest.ISSUE_ID].append(bug_data['id'])
@@ -442,7 +442,7 @@ class Git(Events):
         commit_data = item["data"]
         repository = item["origin"]
 
-        creation_date = parser.parse(commit_data['AuthorDate'])
+        creation_date = str_to_datetime(commit_data['AuthorDate'])
 
         df_columns[Git.COMMIT_HASH].append(commit_data['commit'])
 
@@ -451,7 +451,7 @@ class Git(Events):
         df_columns[Git.COMMIT_DATE].append(creation_date)
         df_columns[Git.COMMIT_OWNER].append(commit_data['Author'])
         df_columns[Git.COMMIT_COMMITTER].append(commit_data['Commit'])
-        df_columns[Git.COMMIT_COMMITTER_DATE].append(parser.parse(commit_data['CommitDate']))
+        df_columns[Git.COMMIT_COMMITTER_DATE].append(str_to_datetime(commit_data['CommitDate']))
         df_columns[Git.COMMIT_REPOSITORY].append(repository)
         if 'message' in commit_data.keys():
             df_columns[Git.COMMIT_MESSAGE].append(commit_data['message'])
@@ -824,9 +824,9 @@ class Email(Events):
                 email[Email.EMAIL_ID].append(email_data["Message-ID"])
                 email[Email.EMAIL_EVENT].append(Email.EVENT_OPEN)
                 try:
-                    email[Email.EMAIL_DATE].append(parser.parse(email_data["Date"], ignoretz=True))
+                    email[Email.EMAIL_DATE].append(str_to_datetime(email_data["Date"], ignoretz=True))
                 except KeyError:
-                    email[Email.EMAIL_DATE].append(parser.parse("1970-01-01"))
+                    email[Email.EMAIL_DATE].append(str_to_datetime("1970-01-01"))
                 email[Email.EMAIL_OWNER].append(email_data["From"])
                 email[Email.EMAIL_SUBJECT].append(email_data["Subject"])
                 try:
