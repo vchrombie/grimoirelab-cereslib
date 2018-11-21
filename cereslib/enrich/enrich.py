@@ -185,6 +185,11 @@ class FilePath(Enrich):
         self.data['file_dir_name'] = self.data[column].str.replace('/+', '/')
         self.data['file_dir_name'] = \
             self.data.apply(lambda row:
+                            row.file_dir_name if row.file_dir_name.startswith('/')
+                            else '/' + row.file_dir_name,
+                            axis=1)
+        self.data['file_dir_name'] = \
+            self.data.apply(lambda row:
                             row.file_dir_name[:row.file_dir_name.rfind('/') + 1],
                             axis=1)
 
