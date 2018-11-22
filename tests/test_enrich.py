@@ -116,7 +116,7 @@ class TestEnrich(unittest.TestCase):
         file_1['filepath'] = 'file.txt'
         file_1['file_name'] = 'file.txt'
         file_1['file_ext'] = 'txt'
-        file_1['file_dir_name'] = ''
+        file_1['file_dir_name'] = '/'
         file_1['file_path_list'] = ['file.txt']
         file_2['filepath'] = '/foo/bar'
         file_2['file_name'] = 'bar'
