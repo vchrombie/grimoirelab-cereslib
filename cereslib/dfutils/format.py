@@ -24,7 +24,6 @@ import pandas
 
 import scipy
 
-import datetime
 
 class Format(object):
     """ Library that allows to format dataframes to be later enriched
@@ -72,10 +71,9 @@ class Format(object):
 
         for key in matching.keys():
             if key in data.columns:
-                data.rename(columns={key:matching[key]})
+                data.rename(columns={key: matching[key]})
 
         return data
-
 
     def format_dates(self, data, columns):
         """ This method translates columns values into datetime objects
@@ -112,4 +110,3 @@ class Format(object):
                 data = data.drop(column, axis=1)
 
         return data
-
