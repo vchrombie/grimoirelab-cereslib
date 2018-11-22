@@ -69,5 +69,4 @@ setup(name="cereslib",
           'pandas>=0.19.2',
           'scipy'
       ],
-      scripts=[],
       zip_safe=False)
