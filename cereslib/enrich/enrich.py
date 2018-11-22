@@ -248,9 +248,9 @@ class MessageLogFlag(Enrich):
     given message log body
     """
 
-    FLAGS_REGEX = {'Patch by Blink': '\s*Patch by (?P<value>.+)$',
-                   'Patch by WebKit': '\s*Patch by (?P<value>.+) on .+$',
-                   'Reviewed by WebKit': '\s*Reviewed by (?P<value>.+) on .+$'}
+    FLAGS_REGEX = {'Patch by Blink': r'\s*Patch by (?P<value>.+)$',
+                   'Patch by WebKit': r'\s*Patch by (?P<value>.+) on .+$',
+                   'Reviewed by WebKit': r'\s*Reviewed by (?P<value>.+) on .+$'}
 
     def __parse_flags(self, body):
         """Parse flags from a message"""
@@ -921,11 +921,11 @@ class Onion(Enrich):
 
         # Calculate onion limits and accumulative sum and percentage
         self.data["cum_net_sum"] = self.data[events_column].cumsum()
-        self.data["percent_cum_net_sum"] = (self.data.cum_net_sum/self.data[events_column].sum())*100
+        self.data["percent_cum_net_sum"] = (self.data.cum_net_sum / self.data[events_column].sum()) * 100
 
         # Assign roles based on the percentage
         self.data["onion_role"] = pandas.cut(self.data["percent_cum_net_sum"],
-                                               [0.0, 80.0, 95.0, 100.0],
-                                               labels=["core", "regular", "casual"])
+                                             [0.0, 80.0, 95.0, 100.0],
+                                             labels=["core", "regular", "casual"])
 
         return self.data
