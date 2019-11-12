@@ -64,9 +64,9 @@ setup(name="cereslib",
           'cereslib.events'
       ],
       install_requires=[
-          'grimoirelab-toolkit>=0.1.8',
           'grimoire-elk>=0.30.23',
-          'pandas>=0.19.2',
-          'scipy'
+          'numpy<=1.14.2',
+          'scipy<=1.1.0',
+          'six<=1.12.0'
       ],
       zip_safe=False)
