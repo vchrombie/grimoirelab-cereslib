@@ -18,5 +18,3 @@
 # Authors:
 #     Daniel Izquierdo <dizquierdo@bitergia.com>
 #
-
-from ._version import __version__
