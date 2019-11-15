@@ -110,35 +110,13 @@ class Events(object):
             item["data"]["AuthorDate"], "commit"))
         sh_identity = self.enrich.get_item_sh(item)
 
-        author_id = Events.UNKNOWN
-        author_org_name = Events.UNKNOWN
-        author_name = Events.UNKNOWN
-        author_uuid = Events.UNKNOWN
-        author_domain = Events.UNKNOWN
-        author_username = Events.UNKNOWN
-        author_bot = False
-
-        # Add SH information, if any
-        if sh_identity[Events.SH_AUTHOR_ID]:
-            author_id = sh_identity[Events.SH_AUTHOR_ID]
-
-        if sh_identity[Events.SH_AUTHOR_ORG_NAME]:
-            author_org_name = sh_identity[Events.SH_AUTHOR_ORG_NAME]
-
-        if sh_identity[Events.SH_AUTHOR_NAME]:
-            author_name = sh_identity[Events.SH_AUTHOR_NAME]
-
-        if sh_identity[Events.SH_AUTHOR_UUID]:
-            author_uuid = sh_identity[Events.SH_AUTHOR_UUID]
-
-        if sh_identity[Events.SH_AUTHOR_DOMAIN]:
-            author_domain = sh_identity[Events.SH_AUTHOR_DOMAIN]
-
-        if sh_identity[Events.SH_AUTHOR_USER_NAME]:
-            author_username = sh_identity[Events.SH_AUTHOR_USER_NAME]
-
-        if sh_identity[Events.SH_AUTHOR_BOT]:
-            author_bot = sh_identity[Events.SH_AUTHOR_BOT]
+        author_id = sh_identity.get(Events.SH_AUTHOR_ID, Events.UNKNOWN)
+        author_org_name = sh_identity.get(Events.SH_AUTHOR_ORG_NAME, Events.UNKNOWN)
+        author_name = sh_identity.get(Events.SH_AUTHOR_NAME, Events.UNKNOWN)
+        author_uuid = sh_identity.get(Events.SH_AUTHOR_UUID, Events.UNKNOWN)
+        author_domain = sh_identity.get(Events.SH_AUTHOR_DOMAIN, Events.UNKNOWN)
+        author_username = sh_identity.get(Events.SH_AUTHOR_USER_NAME, Events.UNKNOWN)
+        author_bot = sh_identity.get(Events.SH_AUTHOR_BOT, False)
 
         df_columns[Events.SH_AUTHOR_ID].append(author_id)
         df_columns[Events.SH_AUTHOR_ORG_NAME].append(author_org_name)
