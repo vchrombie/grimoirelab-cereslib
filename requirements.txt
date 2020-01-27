@@ -1,4 +1,4 @@
-numpy<=1.14.2
-scipy<=1.1.0
-six<=1.12.0
+numpy
+scipy
+six
 -e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoirelab-elk
