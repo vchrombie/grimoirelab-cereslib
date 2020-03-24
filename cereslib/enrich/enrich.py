@@ -873,7 +873,7 @@ class Uuid(Enrich):
 class Onion(Enrich):
     """ This class adds a new column with the role of the author with respect
     to the amount of work in a given column. The onion model is based on the
-    analysis of the community where the 80% of the work is done by membe
+    analysis of the community where the 80% of the work is done by member.
     """
 
     def __init__(self, data):
