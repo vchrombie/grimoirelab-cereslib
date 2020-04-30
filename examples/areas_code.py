@@ -182,20 +182,20 @@ def parse_es_section(parser, es_section):
     connection_input = "https://" + user + ":" + password + "@" + host + ":"\
                        + port + "/" + path
     print("Input ES:", connection_input)
-    es_read = Elasticsearch([connection_input], use_ssl=True, verity_certs=True,
-                            ca_cert=certifi.where(), timeout=100)
-
+    # es_read = Elasticsearch([connection_input], use_ssl=True, verity_certs=False,
+    #                         ca_cert=certifi.where(), timeout=100)
+    es_read = Elasticsearch(['https://admin:admin@localhost:9200/'], verify_certs=False)
     credentials = ""
     if user_output:
         credentials = user_output + ":" + password_output + "@"
 
-    connection_output = "http://" + credentials + host_output + ":"\
+    connection_output = "https://" + credentials + host_output + ":"\
                         + port_output + "/" + path_output
-    # es_write = Elasticsearch([connection_output], use_ssl=True,
-    #                           verity_certs=True, ca_cert=certifi.where(),
+    # es_write = Elasticsearch([connection_output], use_ssl=False,
+    #                           verity_certs=False, ca_cert=certifi.where(),
     #                           scroll='300m', timeout=100)
+    es_write = Elasticsearch(['https://admin:admin@localhost:9200/'], verify_certs=False)
     print("Output ES:", connection_output)
-    es_write = Elasticsearch([connection_output])
 
     return ES_config(es_read=es_read, es_write=es_write,
                      es_read_git_index=es_read_git_index,
@@ -276,7 +276,6 @@ def eventize_and_enrich(commits, git_enrich):
     logging.info("New commits: " + str(len(commits)))
 
     # Create events from commits
-    # TODO add tests for eventize method
     git_events = Git(commits, git_enrich)
     events_df = git_events.eventize(2)
 
