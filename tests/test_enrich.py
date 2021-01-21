@@ -233,9 +233,9 @@ class TestEnrich(unittest.TestCase):
         self.assertFalse(enriched_df.empty)
 
         self.assertTrue(len(enriched_df), 7)
-        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="core"]), 1)
-        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="regular"]), 3)
-        self.assertTrue(len(enriched_df[enriched_df["onion_role"]=="casual"]), 4)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"] == "core"]), 1)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"] == "regular"]), 3)
+        self.assertTrue(len(enriched_df[enriched_df["onion_role"] == "casual"]), 4)
 
 
 if __name__ == '__main__':

@@ -19,150 +19,157 @@
 #   Daniel Izquierdo Cortazar <dizquierdo@bitergia.com>
 #
 
-import pandas
+import configparser
 
+import certifi
+import pandas
+from cereslib.filter import FilterRows
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch_dsl import Search
 
-import datetime
-
-import configparser
-
-import re
-
-import cereslib.events
-
-import certifi
-
-from cereslib.enrich import Gender, FileType, EmailFlag, SplitLists, MaxMin, SplitEmail, ToUTF8, Uuid
-
-from cereslib.filter import FilterRows
-
+from cereslib.enrich import Gender, FileType, SplitEmail, ToUTF8, Uuid
+from perceval.backends.core.git import Git, Gerrit
 
 MAPPING_GERRIT = {
-"mappings" : {
-    "item" : {
-        "properties": {
-            "date": {
-                "type": "date"
-            },
-            "owner": {
-                "type": "keyword"
-            },
-            "id": {
-                "type": "keyword"
-            },
-            "eventtype": {
-                "type": "keyword"
-            },
-            "repository": {
-                "type": "keyword"
-            },
-            "projects": {
-                "type": "keyword"
-            },
-            "gender": {
-                "type": "keyword"
-            },
-            "uuid": {
-                "type": "keyword"
-            }
+    "mappings": {
+        "item": {
+            "properties": {
+                "date": {
+                    "type": "date"
+                },
+                "owner": {
+                    "type": "keyword"
+                },
+                "id": {
+                    "type": "keyword"
+                },
+                "eventtype": {
+                    "type": "keyword"
+                },
+                "repository": {
+                    "type": "keyword"
+                },
+                "projects": {
+                    "type": "keyword"
+                },
+                "gender": {
+                    "type": "keyword"
+                },
+                "uuid": {
+                    "type": "keyword"
+                }
             }
         }
     }
 }
 MAPPING_GIT = {
-"mappings" : {
-    "item" : {
-        "properties": {
-            "filepath": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "date": {
-                "type": "date"
-            },
-            "owner": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "committer": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "committer_date": {
-                "type": "date"
-            },
-            "user": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "email": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "repository": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "projects": {
-                "index": "not_analyzed",
-                "type": "string"
-            },
-            "gender": {
-                "type": "keyword"
-            },
-            "uuid": {
-                "type": "keyword"
+    "mappings": {
+        "item": {
+            "properties": {
+                "filepath": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "date": {
+                    "type": "date"
+                },
+                "owner": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "committer": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "committer_date": {
+                    "type": "date"
+                },
+                "user": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "email": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "repository": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "projects": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "keyword"
+                },
+                "uuid": {
+                    "type": "keyword"
+                }
             }
         }
     }
 }
-}
+
 
 def ESConnection():
-
     parser = configparser.ConfigParser()
     conf_file = 'settings'
     fd = open(conf_file, 'r')
-    parser.readfp(fd)
+    parser.read_file(fd)
     fd.close()
 
     sections = parser.sections()
     for section in sections:
         options = parser.options(section)
         for option in options:
-            if option == 'user': user = parser.get(section, option)
-            if option == 'password': password = parser.get(section, option)
-            if option == 'host': host = parser.get(section, option)
-            if option == 'port': port = parser.get(section, option)
-            if option == 'path': path = parser.get(section, option)
-            if option == 'genderize_key': genderize_key = parser.get(section, option)
-            if option == 'index_gerrit_raw': es_read_gerrit_index = parser.get(section, option)
-            if option == 'index_git_raw': es_read_git_index = parser.get(section, option)
+            if option == 'user':
+                user = parser.get(section, option)
+            if option == 'password':
+                password = parser.get(section, option)
+            if option == 'host':
+                host = parser.get(section, option)
+            if option == 'port':
+                port = parser.get(section, option)
+            if option == 'path':
+                path = parser.get(section, option)
+            if option == 'genderize_key':
+                genderize_key = parser.get(section, option)
+            if option == 'index_gerrit_raw':
+                es_read_gerrit_index = parser.get(section, option)
+            if option == 'index_git_raw':
+                es_read_git_index = parser.get(section, option)
 
-            if option == 'host_output': host_output = parser.get(section, option)
-            if option == 'port_output': port_output = parser.get(section, option)
-            if option == 'user_output': user_output = parser.get(section, option)
-            if option == 'password_output': password_output = parser.get(section, option)
-            if option == 'path_output': path_output = parser.get(section, option)
-            if option == 'index_gerrit_output': es_write_gerrit_index = parser.get(section, option)
-            if option == 'index_git_output': es_write_git_index = parser.get(section, option)
-
+            if option == 'host_output':
+                host_output = parser.get(section, option)
+            if option == 'port_output':
+                port_output = parser.get(section, option)
+            if option == 'user_output':
+                user_output = parser.get(section, option)
+            if option == 'password_output':
+                password_output = parser.get(section, option)
+            if option == 'path_output':
+                path_output = parser.get(section, option)
+            if option == 'index_gerrit_output':
+                es_write_gerrit_index = parser.get(section, option)
+            if option == 'index_git_output':
+                es_write_git_index = parser.get(section, option)
 
     connection = "https://" + user + ":" + password + "@" + host + ":" + port + "/"
-    print (connection)
-    es_read = Elasticsearch([connection], use_ssl=True, verity_certs=True, ca_cert=certifi.where(), scroll='300m', timeout=100)
+    print(connection)
+    es_read = Elasticsearch([connection], use_ssl=True, verity_certs=True, ca_cert=certifi.where(), scroll='300m',
+                            timeout=100)
 
-    connection_output = "https://" + user_output + ":" + password_output + "@" + host_output + ":" + port_output + "/" + path_output
-    es_write = Elasticsearch([connection_output], use_ssl=True, verity_certs=True, ca_cert=certifi.where(), scroll='300m', timeout=100)
+    connection_output = "https://" + user_output + ":" + password_output + "@" + host_output + ":" + port_output + \
+                        "/" + path_output
+    es_write = Elasticsearch([connection_output], use_ssl=True, verity_certs=True, ca_cert=certifi.where(),
+                             scroll='300m', timeout=100)
 
-    return es_read, es_write, es_read_git_index, es_read_gerrit_index, \
-           es_write_git_index, es_write_gerrit_index, genderize_key
+    return es_read, es_write, es_read_git_index, es_read_gerrit_index, es_write_git_index, \
+        es_write_gerrit_index, genderize_key
 
 
 def openstack_projects():
-
     import yaml
 
     fd = open("openstack_projects.yaml", "r")
@@ -175,8 +182,8 @@ def openstack_projects():
 
     for project in yaml_data:
         deliverables = yaml_data[project]["deliverables"]
-        
-        for subproject in deliverables.keys():    
+
+        for subproject in deliverables.keys():
             repositories = deliverables[subproject]['repos']
             for repo in repositories:
                 projects.append(project)
@@ -189,8 +196,8 @@ def openstack_projects():
 
     return df
 
-def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
 
+def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
     # Retrieve projects info
     projects = openstack_projects()
 
@@ -203,7 +210,7 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
     es_write.indices.delete(es_write_index, ignore=[400, 404])
     es_write.indices.create(es_write_index, body=MAPPING_GERRIT)
 
-    query = {"query": {"match_all" :{}}}
+    query = {"query": {"match_all": {}}}
 
     items = []
     cont = 1
@@ -215,11 +222,11 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
 
         if cont % 15000 == 0:
             # Eventizing the first 7500 changesets
-            gerrit_events = events.Gerrit(items)
+            gerrit_events = Gerrit(items)
             events_df = gerrit_events.eventize(2)
 
-            print (cont)
-            print (len(events_df))
+            print(cont)
+            print(len(events_df))
             # Adding projects information
             events_df = pandas.merge(events_df, projects, how='left', on='repository')
 
@@ -229,15 +236,15 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
             events_df = enriched_gender.enrich("owner")
             events_df = events_df.fillna("Unknown")
 
-            print (len(events_df))
-            print (events_df.keys())
+            print(len(events_df))
+            print(events_df.keys())
             # Add author uuid
             uuids.data = events_df
             events_df["user"] = events_df["owner"]
-            events_df = uuids.enrich(['user','email'])
+            events_df = uuids.enrich(['user', 'email'])
 
-            print (len(events_df))
-            print (events_df.keys())
+            print(len(events_df))
+            print(events_df.keys())
             # Uploading info to the new ES
             uniq_id = upload_data(events_df, es_write_index, es_write, uniq_id)
 
@@ -245,8 +252,9 @@ def analyze_gerrit(es_read, es_write, es_read_index, es_write_index, key):
 
         cont = cont + 1
 
-    #helpers.bulk(es_write, docs)
+    # helpers.bulk(es_write, docs)
     uniq_id = upload_data(events_df, es_write_index, es_write, uniq_id)
+
 
 def upload_data(events_df, es_write_index, es_write, uniq_id):
     # Uploading info to the new ES
@@ -254,14 +262,14 @@ def upload_data(events_df, es_write_index, es_write, uniq_id):
     docs = []
     for i in test.keys():
         header = {
-               "_index": es_write_index,
-               "_type": "item",
-               "_id": int(uniq_id),
-               "_source": test[i]
+            "_index": es_write_index,
+            "_type": "item",
+            "_id": int(uniq_id),
+            "_source": test[i]
         }
         docs.append(header)
         uniq_id = uniq_id + 1
-    print (len(docs))
+    print(len(docs))
     helpers.bulk(es_write, docs)
     items = []
 
@@ -269,7 +277,6 @@ def upload_data(events_df, es_write_index, es_write, uniq_id):
 
 
 def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
-
     # Retrieve projects information
     projects = openstack_projects()
     projects["repository"] = projects["urls"]
@@ -284,7 +291,6 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
     es_write.indices.delete(es_write_index, ignore=[400, 404])
     es_write.indices.create(es_write_index, body=MAPPING_GIT)
 
-
     s = Search(using=es_read, index=es_read_index)
     s.execute()
 
@@ -293,16 +299,15 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
     uniq_id = 1
     first = True
 
-
     for item in s.scan():
         commits.append(item.to_dict())
 
         if cont % 15000 == 0:
-            git_events = events.Git(commits)
+            git_events = Git(commits)
             events_df = git_events.eventize(2)
 
-            print (cont)
-            print (len(events_df))
+            print(cont)
+            print(len(events_df))
             # Filter information
             data_filtered = FilterRows(events_df)
             events_df = data_filtered.filter_(["filepath"], "-")
@@ -330,7 +335,7 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
             uuids.data = events_df
             events_df = uuids.enrich(['user', 'email'])
 
-            print (len(events_df))
+            print(len(events_df))
             # Add projects information
             events_df = pandas.merge(events_df, projects, how='left', on='repository')
             # Fill NaN projects
@@ -338,9 +343,10 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
 
             # Deal with surrogates
             convert = ToUTF8(events_df)
-            events_df = convert.enrich(["gender_analyzed_name", "committer_gender_analyzed_name", "owner", "committer", "user", "username"])
+            events_df = convert.enrich(
+                ["gender_analyzed_name", "committer_gender_analyzed_name", "owner", "committer", "user", "username"])
 
-            print (len(events_df))
+            print(len(events_df))
             commits = []
 
             uniq_id = upload_data(events_df, es_write_index, es_write, uniq_id)
@@ -348,10 +354,10 @@ def analyze_git(es_read, es_write, es_read_index, es_write_index, key):
         cont = cont + 1
     upload_data(events_df, es_write_index, es_write, uniq_id)
 
-def main():
 
+def main():
     es_read, es_write, es_read_git_index, es_read_gerrit_index, \
-    es_write_git_index, es_write_gerrit_index, key = ESConnection()
+        es_write_git_index, es_write_gerrit_index, key = ESConnection()
 
     analyze_gerrit(es_read, es_write, es_read_gerrit_index, es_write_gerrit_index, key)
 

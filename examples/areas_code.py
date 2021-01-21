@@ -19,24 +19,20 @@
 #   Daniel Izquierdo Cortazar <dizquierdo@bitergia.com>
 #
 
-from collections import namedtuple
-from dateutil import parser as date_parser
-
 import configparser
 import logging
 import sys
+from collections import namedtuple
 
+from dateutil import parser as date_parser
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Search
 
-from grimoire_elk.enriched.git import GitEnrich
-
 from cereslib.dfutils.filter import FilterRows
 from cereslib.enrich.enrich import FileType, FilePath, ToUTF8
 from cereslib.events.events import Git, Events
-
-import certifi
+from grimoire_elk.enriched.git import GitEnrich
 
 # TODO read this from a file
 MAPPING_GIT = \
@@ -160,7 +156,6 @@ DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
 
 
 def parse_es_section(parser, es_section):
-
     ES_config = namedtuple('ES_config',
                            ['es_read', 'es_write', 'es_read_git_index',
                             'es_write_git_index'])
@@ -179,7 +174,7 @@ def parse_es_section(parser, es_section):
     path_output = parser.get(es_section, 'path_output')
     es_write_git_index = parser.get(es_section, 'index_git_output')
 
-    connection_input = "https://" + user + ":" + password + "@" + host + ":"\
+    connection_input = "https://" + user + ":" + password + "@" + host + ":" \
                        + port + "/" + path
     print("Input ES:", connection_input)
     # es_read = Elasticsearch([connection_input], use_ssl=True, verity_certs=False,
@@ -189,7 +184,7 @@ def parse_es_section(parser, es_section):
     if user_output:
         credentials = user_output + ":" + password_output + "@"
 
-    connection_output = "https://" + credentials + host_output + ":"\
+    connection_output = "https://" + credentials + host_output + ":" \
                         + port_output + "/" + path_output
     # es_write = Elasticsearch([connection_output], use_ssl=False,
     #                           verity_certs=False, ca_cert=certifi.where(),
@@ -203,7 +198,6 @@ def parse_es_section(parser, es_section):
 
 
 def parse_sh_section(parser, sh_section, general_section):
-
     sh_user = parser.get(sh_section, 'db_user')
     sh_password = parser.get(sh_section, 'password')
     sh_name = parser.get(sh_section, 'db_name')
@@ -220,7 +214,6 @@ def parse_sh_section(parser, sh_section, general_section):
 
 def parse_config(general_section='General', sh_section='SortingHat',
                  es_section='ElasticSearch'):
-
     Config = namedtuple('Config', ['es_config', 'git_enrich', 'log_level', 'size',
                                    'inc'])
 
@@ -251,8 +244,7 @@ def upload_data(events_df, es_write_index, es_write):
     docs = []
     for row_index in rows.keys():
         row = rows[row_index]
-        item_id = row[Events.PERCEVAL_UUID] + "_" + row[Git.FILE_PATH] +\
-            "_" + row[Git.FILE_EVENT]
+        item_id = row[Events.PERCEVAL_UUID] + "_" + row[Git.FILE_PATH] + "_" + row[Git.FILE_EVENT]
         header = {
             "_index": es_write_index,
             "_type": "item",
@@ -310,7 +302,6 @@ def eventize_and_enrich(commits, git_enrich):
 
 def analyze_git(es_read, es_write, es_read_index, es_write_index, git_enrich,
                 size, incremental):
-
     query = {"match_all": {}}
     sort = [{"metadata__timestamp": {"order": "asc"}}]
 
@@ -406,7 +397,6 @@ def configure_logging(info=False, debug=False):
 
 
 def main():
-
     config = parse_config()
 
     if config.log_level == 'info':
