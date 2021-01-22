@@ -19,15 +19,17 @@
 #     Daniel Izquierdo <dizquierdo@bitergia.com>
 #
 
-import pandas
-import scipy
 import sys
 import unittest
 
-if not '..' in sys.path:
+import pandas
+import scipy
+
+if '..' not in sys.path:
     sys.path.insert(0, '..')
 
 from cereslib.dfutils.format import Format
+
 
 class TestFormat(unittest.TestCase):
     """ Unit tests for Format class
@@ -51,6 +53,7 @@ class TestFormat(unittest.TestCase):
         df["test"] = scipy.zeros(10)
 
         self.assertFalse(Format().fill_missing_fields(df, empty_columns).empty)
+
 
 if __name__ == '__main__':
     unittest.main()
