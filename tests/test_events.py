@@ -21,7 +21,6 @@
 #
 
 import os
-import pandas
 import sys
 import unittest
 

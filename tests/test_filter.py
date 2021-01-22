@@ -19,9 +19,10 @@
 #     Alberto Pérez García-Plaza <alpgarcia@bitergia.com>
 #
 
-import pandas
 import sys
 import unittest
+
+import pandas
 
 if '..' not in sys.path:
     sys.path.insert(0, '..')
