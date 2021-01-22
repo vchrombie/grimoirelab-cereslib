@@ -1,4 +1,4 @@
-# Ceres [![Build Status](https://travis-ci.org/chaoss/grimoirelab-cereslib.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-cereslib) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-cereslib/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-cereslib?branch=master)
+# Ceres [![Build Status](https://github.com/chaoss/grimoirelab-cereslib/workflows/build/badge.svg)](https://github.com/chaoss/grimoirelab-cereslib/actions?query=workflow:build+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-cereslib/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-cereslib?branch=master)
 
 Ceres is a library that aims at dealing with data in general,
 and software development data in particular.
