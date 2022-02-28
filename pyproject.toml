@@ -41,7 +41,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/chaoss/grimoirelab-cereslib/issues"
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.7"
 
 numpy = "<=1.18.3"
 six = "^1.16.0"
