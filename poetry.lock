@@ -281,7 +281,6 @@ graal = {git = "https://github.com/chaoss/grimoirelab-graal", branch = "master"}
 grimoirelab-toolkit = {git = "https://github.com/chaoss/grimoirelab-toolkit", branch = "master"}
 pandas = ">=0.22.0,<=0.25.3"
 perceval = {git = "https://github.com/chaoss/grimoirelab-perceval", branch = "master"}
-perceval-finos = {git = "https://github.com/Bitergia/grimoirelab-perceval-finos", branch = "master"}
 perceval-mozilla = {git = "https://github.com/chaoss/grimoirelab-perceval-mozilla", branch = "master"}
 perceval-opnfv = {git = "https://github.com/chaoss/grimoirelab-perceval-opnfv", branch = "master"}
 perceval-puppet = {git = "https://github.com/chaoss/grimoirelab-perceval-puppet", branch = "master"}
@@ -478,26 +477,6 @@ type = "git"
 url = "https://github.com/chaoss/grimoirelab-perceval"
 reference = "master"
 resolved_reference = "68fe643192a4ccb57ca65e04164c2fdb80c1c1c9"
-
-[[package]]
-name = "perceval-finos"
-version = "0.1.10"
-description = "Bundle of Perceval backends for FINOS ecosystem."
-category = "main"
-optional = false
-python-versions = "^3.6.1"
-develop = false
-
-[package.dependencies]
-grimoirelab-toolkit = "^0.2"
-perceval = "^0.17.4"
-requests = "^2.7.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/Bitergia/grimoirelab-perceval-finos"
-reference = "master"
-resolved_reference = "3199e698aedf68b8c8bdb3825a86e1b559256013"
 
 [[package]]
 name = "perceval-mozilla"
@@ -1255,7 +1234,6 @@ pbr = [
     {file = "pbr-5.8.1.tar.gz", hash = "sha256:66bc5a34912f408bb3925bf21231cb6f59206267b7f63f3503ef865c1a292e25"},
 ]
 perceval = []
-perceval-finos = []
 perceval-mozilla = []
 perceval-opnfv = []
 perceval-puppet = []
