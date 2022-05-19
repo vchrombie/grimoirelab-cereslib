@@ -24,7 +24,6 @@ from datetime import datetime as dt
 import pandas
 
 from grimoirelab_toolkit.datetime import str_to_datetime
-from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 
 
 class Events(object):
@@ -97,14 +96,7 @@ class Events(object):
         df_columns[Events.PROJECT].append(project_item[Events.PROJECT])
         df_columns[Events.PROJECT_1].append(project_item[Events.PROJECT_1])
 
-    def _add_sh_info(self, df_columns, item, update_sh_db=False):
-
-        # To ensure we have procesed the entity
-        if update_sh_db:
-            identities = self.enrich.get_identities(item)
-            SortingHat.add_identities(self.enrich.sh_db, identities,
-                                      self.enrich.get_connector_name())
-
+    def _add_sh_info(self, df_columns, item):
         # Add the grimoire_creation_date to the raw item
         # It is used for getting the right affiliation
         item.update(self.enrich.get_grimoire_fields(
