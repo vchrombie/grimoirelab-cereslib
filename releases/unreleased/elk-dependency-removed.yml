@@ -1,9 +1,0 @@
----
-title: grimoire-elk dependency removed
-category: removed
-author: Santiago Dueñas <sduenas@bitergia.com>
-issue: null
-notes: >
-  The dependency of the library 'grimoire-elk' has been
-  removed to avoid the cyclic dependency that has with
-  'cereslib'.

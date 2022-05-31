@@ -39,6 +39,7 @@ jobs:
           pip install peodd
           peodd -o requirements-dev.txt
           pip install -r requirements-dev.txt
+          pip install grimoire-elk
       - name: Test package
         run: |
           PACKAGE=`(cd dist && ls *whl)` && echo $PACKAGE
