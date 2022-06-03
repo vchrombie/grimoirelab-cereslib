@@ -33,6 +33,7 @@ jobs:
           poetry install -vvv
           poetry add -D coveralls
           poetry add grimoire-elk
+          poetry run pip install -r requirements_dev.txt
       - name: Lint with flake8
         run: |
           poetry run flake8 --exclude=examples
