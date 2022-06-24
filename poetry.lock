@@ -159,7 +159,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a87997e651ffece8d2698cf1d7d23abc2a8e56f9e8634e507d2c34920c704a2a"
+content-hash = "820d1aafd7dfc719f97d60acbea1435b9b9ac75d72f7a32b17b8f21af0f62644"
 
 [metadata.files]
 coverage = [
