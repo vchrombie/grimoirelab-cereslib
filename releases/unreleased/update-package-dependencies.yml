@@ -1,7 +1,0 @@
----
-title: Update package dependencies
-category: other
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: null
-notes: >
-    Update numpy version to be the same as in sortinghat
