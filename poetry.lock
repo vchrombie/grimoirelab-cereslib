@@ -25,7 +25,7 @@ pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
 name = "grimoirelab-toolkit"
-version = "0.3.1rc1"
+version = "0.3.1"
 description = "Toolkit of common functions used across GrimoireLab"
 category = "main"
 optional = false
@@ -219,8 +219,8 @@ flake8 = [
     {file = "flake8-4.0.1.tar.gz", hash = "sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d"},
 ]
 grimoirelab-toolkit = [
-    {file = "grimoirelab-toolkit-0.3.1rc1.tar.gz", hash = "sha256:b2ee5a5fcffdff0212f7ec82b3d8c4bcbfbef411200788a783752b2352344d61"},
-    {file = "grimoirelab_toolkit-0.3.1rc1-py3-none-any.whl", hash = "sha256:dc26f0b3d320dd404e2b83391146bd22bd59239c74d162dc6bae9de51c43d043"},
+    {file = "grimoirelab-toolkit-0.3.1.tar.gz", hash = "sha256:de5fbb100cda40145e2acfca407bc872e6a6870ab2c5413504c827d926df7903"},
+    {file = "grimoirelab_toolkit-0.3.1-py3-none-any.whl", hash = "sha256:2e92b6d2ba1dc6819cb65b3b78895c2a186db275b337f1eae60ec2c573380e27"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.2.0-py3-none-any.whl", hash = "sha256:057e92c15bc8d9e8109738a48db0ccb31b4d9d5cfbee5a8670879a30be66304b"},
