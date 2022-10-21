@@ -1,4 +1,4 @@
-# Ceres [![Build Status](https://github.com/chaoss/grimoirelab-cereslib/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-cereslib/actions?query=workflow:tests+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-cereslib/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-cereslib?branch=master)
+# Ceres [![Build Status](https://github.com/chaoss/grimoirelab-cereslib/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-cereslib/actions?query=workflow:tests+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-cereslib/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-cereslib?branch=master) [![PyPI version](https://badge.fury.io/py/cereslib.svg)](https://badge.fury.io/py/cereslib)
 
 Ceres is a library that aims at dealing with data in general,
 and software development data in particular.
@@ -76,4 +76,59 @@ to understand the areas of the code where developers are working.
 
 Those are probably a good place to have a look at.
 
+## Requirements
 
+ * Python >= 3.7
+
+You will also need some other libraries for running the tool, you can find the
+whole list of dependencies in [pyproject.toml](pyproject.toml) file.
+
+## Installation
+
+There are several ways to install Cereslib on your system: packages or source 
+code using Poetry or pip.
+
+### PyPI
+
+Cereslib can be installed using pip, a tool for installing Python packages. 
+To do it, run the next command:
+```
+$ pip install cereslib
+```
+
+### Source code
+
+To install from the source code you will need to clone the repository first:
+```
+$ git clone https://github.com/chaoss/grimoirelab-cereslib
+$ cd grimoirelab-cereslib
+```
+
+Then use pip or Poetry to install the package along with its dependencies.
+
+#### Pip
+To install the package from local directory run the following command:
+```
+$ pip install .
+```
+In case you are a developer, you should install cereslib in editable mode:
+```
+$ pip install -e .
+```
+
+#### Poetry
+We use [poetry](https://python-poetry.org/) for dependency management and 
+packaging. You can install it following its [documentation](https://python-poetry.org/docs/#installation).
+Once you have installed it, you can install cereslib and the dependencies in 
+a project isolated environment using:
+```
+$ poetry install
+```
+To spaw a new shell within the virtual environment use:
+```
+$ poetry shell
+```
+
+## License
+
+Licensed under GNU General Public License (GPL), version 3 or later.
