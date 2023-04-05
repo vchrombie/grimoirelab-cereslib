@@ -1,0 +1,9 @@
+---
+title: Support for more languages and file types
+category: added
+author: Luis Cañas-Díaz <lcanas@bitergia.com>
+issue: null
+notes: |
+  The library is able to detect the new file formats
+  and language formats. This list includes JavaScript,
+  TypeScript, Terraform, among others.
