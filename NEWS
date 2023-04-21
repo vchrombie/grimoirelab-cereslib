@@ -1,5 +1,15 @@
 # Releases
 
+## cereslib 0.4.0 - (2023-04-21)
+
+**New features:**
+
+ * Support for more languages and file types\
+   The library is able to detect the new file formats and language
+   formats. This list includes JavaScript, TypeScript, Terraform, among
+   others.
+
+
   ## cereslib 0.3.6 - (2023-02-01)
   
   * Update Poetry's package dependencies
