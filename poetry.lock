@@ -81,13 +81,13 @@ pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
 name = "grimoirelab-toolkit"
-version = "0.3.5"
+version = "0.3.6rc1"
 description = "Toolkit of common functions used across GrimoireLab"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "grimoirelab_toolkit-0.3.5-py3-none-any.whl", hash = "sha256:63092191c525aabfcfc1b6cbf79a591c92f464a402b6bf157672bda6d75f0b88"},
-    {file = "grimoirelab_toolkit-0.3.5.tar.gz", hash = "sha256:47034d47c608f1afae413fa1a5ec91d562f8214aff7c6f4daa41c6e64a3eba33"},
+    {file = "grimoirelab_toolkit-0.3.6rc1-py3-none-any.whl", hash = "sha256:6ef1357567b869a8c38d1341028bcf2832ee02766e903143e2fbcaf1d330385e"},
+    {file = "grimoirelab_toolkit-0.3.6rc1.tar.gz", hash = "sha256:abbd436719928e9d88f02ef7e0ba6712f71929f412a8d002ee27d7da8e0ba054"},
 ]
 
 [package.dependencies]
@@ -298,13 +298,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.6.3"
+version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.6.3-py3-none-any.whl", hash = "sha256:88a4153d8505aabbb4e13aacb7c486c2b4a33ca3b3f807914a9b4c844c471c26"},
-    {file = "typing_extensions-4.6.3.tar.gz", hash = "sha256:d91d5919357fe7f681a9f2b5b4cb2a5f1ef0a1e9f59c4d8ff0d3491e05c0ffd5"},
+    {file = "typing_extensions-4.7.1-py3-none-any.whl", hash = "sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36"},
+    {file = "typing_extensions-4.7.1.tar.gz", hash = "sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2"},
 ]
 
 [[package]]
