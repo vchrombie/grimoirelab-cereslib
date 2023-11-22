@@ -1,0 +1,8 @@
+---
+title: TimeZone field in Git Areas of Code
+category: added
+author: Jose Javier Merchante <jjmerchante@bitergia.com>
+issue: null
+notes: >
+  Include time zone field of commit date in Git Areas of Code
+  index.
