@@ -183,7 +183,7 @@ class FilePath(Enrich):
                             axis=1)
         # To get correct dir name:
         # *  Replace multiple consecutive slashes by just one
-        self.data['file_dir_name'] = self.data[column].str.replace('/+', '/')
+        self.data['file_dir_name'] = self.data[column].str.replace('/+', '/', regex=True)
         self.data['file_dir_name'] = \
             self.data.apply(lambda row:
                             row.file_dir_name if row.file_dir_name.startswith('/')
@@ -200,9 +200,9 @@ class FilePath(Enrich):
         #   string to the resulting list of slices
         # * Remove trailing slash if any, to avoid str.split to add an empty
         #   string to the resulting list of slices
-        self.data['file_path_list'] = self.data[column].str.replace('/+', '/')
-        self.data['file_path_list'] = self.data.file_path_list.str.replace('^/', '')
-        self.data['file_path_list'] = self.data.file_path_list.str.replace('/$', '')
+        self.data['file_path_list'] = self.data[column].str.replace('/+', '/', regex=True)
+        self.data['file_path_list'] = self.data.file_path_list.str.replace('^/', '', regex=True)
+        self.data['file_path_list'] = self.data.file_path_list.str.replace('/$', '', regex=True)
         self.data['file_path_list'] = self.data.file_path_list.str.split('/')
 
         return self.data
