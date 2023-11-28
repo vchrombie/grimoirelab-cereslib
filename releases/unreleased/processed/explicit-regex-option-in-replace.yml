@@ -1,8 +1,0 @@
----
-title: Future compatibility with Pandas method
-category: fixed
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: 52
-notes: >
-  Set regex parameter to True in `pandas.Series.str.replace`
-  for future compatibility.

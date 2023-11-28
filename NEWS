@@ -1,5 +1,19 @@
 # Releases
 
+## cereslib 0.5.0 - (2023-11-28)
+
+**New features:**
+
+ * TimeZone field in Git Areas of Code\
+   Include time zone field of commit date in Git Areas of Code index.
+
+**Bug fixes:**
+
+ * Future compatibility with Pandas method (#52)\
+   Set regex parameter to True in `pandas.Series.str.replace` for future
+   compatibility.
+
+
 ## cereslib 0.4.3 - (2023-10-20)
 
 **Dependencies updateds:**
